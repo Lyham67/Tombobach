@@ -49,7 +49,7 @@ function applyContentToPage() {
 
 // Sauvegarder le contenu sur le serveur
 async function saveContentToServer() {
-    const password = prompt('🔒 Mot de passe pour sauvegarder les modifications :');
+    const password = prompt('Mot de passe pour sauvegarder les modifications :');
     if (!password) return;
     
     try {
@@ -64,12 +64,12 @@ async function saveContentToServer() {
         
         const result = await response.json();
         if (response.ok) {
-            alert('✅ Modifications sauvegardées ! Tous les visiteurs verront les changements.');
+            alert('Modifications sauvegardees ! Tous les visiteurs verront les changements.');
         } else {
-            alert('❌ ' + (result.error || 'Erreur lors de la sauvegarde'));
+            alert('ERREUR: ' + (result.error || 'Erreur lors de la sauvegarde'));
         }
     } catch (error) {
-        alert('❌ Erreur de connexion au serveur');
+        alert('ERREUR: Erreur de connexion au serveur');
     }
 }
 
@@ -77,9 +77,9 @@ async function saveContentToServer() {
 function activateEditMode() {
     if (editModeActive) return;
     
-    const password = prompt('🔒 Mot de passe pour activer le mode édition :');
+    const password = prompt('Mot de passe pour activer le mode edition :');
     if (password !== 'TOMBOG11') {
-        if (password) alert('❌ Mot de passe incorrect !');
+        if (password) alert('Mot de passe incorrect !');
         return;
     }
     
@@ -102,12 +102,12 @@ function activateEditMode() {
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     `;
     banner.innerHTML = `
-        🔓 MODE ÉDITION ACTIVÉ
+        MODE EDITION ACTIVE
         <button onclick="saveContentToServer()" style="margin-left: 20px; padding: 8px 15px; background: white; color: #ef4444; border: none; border-radius: 5px; font-weight: 600; cursor: pointer;">
-            💾 Sauvegarder
+            Sauvegarder
         </button>
         <button onclick="location.reload()" style="margin-left: 10px; padding: 8px 15px; background: rgba(255,255,255,0.2); color: white; border: 1px solid white; border-radius: 5px; font-weight: 600; cursor: pointer;">
-            ❌ Annuler
+            Annuler
         </button>
     `;
     document.body.insertBefore(banner, document.body.firstChild);
@@ -119,7 +119,7 @@ function activateEditMode() {
     // Activer l'édition des petites images
     addSmallPrizeImageEditors();
     
-    alert('✅ Mode édition activé ! Modifiez les images puis cliquez sur "Sauvegarder".');
+    alert('Mode edition active ! Modifiez les images puis cliquez sur Sauvegarder.');
 }
 
 // Ajouter l'éditeur d'image hero
@@ -128,7 +128,7 @@ function addHeroImageEditor() {
     if (!heroSection) return;
     
     const btn = document.createElement('button');
-    btn.textContent = '📷 Changer l'image de fond';
+    btn.textContent = 'Changer image de fond';
     btn.style.cssText = `
         position: absolute;
         bottom: 20px;
@@ -170,7 +170,7 @@ function addSmallPrizeImageEditors() {
         const container = img.parentElement;
         
         const btn = document.createElement('button');
-        btn.textContent = '📷 Changer';
+        btn.textContent = 'Changer image';
         btn.style.cssText = `
             position: absolute;
             top: 10px;
@@ -212,13 +212,17 @@ function addSmallPrizeImageEditors() {
     });
 }
 
-// Raccourci clavier Ctrl+Shift+E
-document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.shiftKey && e.key === 'E') {
-        e.preventDefault();
-        activateEditMode();
-    }
-});
-
 // Charger le contenu au démarrage
-window.addEventListener('DOMContentLoaded', loadContentFromServer);
+window.addEventListener('DOMContentLoaded', function() {
+    loadContentFromServer();
+    
+    // Raccourci clavier Ctrl+Shift+E (activé après le chargement)
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+            e.preventDefault();
+            activateEditMode();
+        }
+    });
+    
+    console.log('Mode edition disponible : Ctrl+Shift+E');
+});
