@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     customerInfo: data
                 }, null, 2));
                 
-                const response = await fetch('/create-checkout-session', {
+                const response = await fetch(`${API_URL}/create-checkout-session`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
