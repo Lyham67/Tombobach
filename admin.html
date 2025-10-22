@@ -365,22 +365,51 @@
             });
         }
         
-        // Charger les paiements depuis le serveur
+        // Charger les paiements depuis le serveur OU localStorage
         async function loadPayments() {
             try {
-                // Charger d'abord les statistiques
-                await loadStats();
-                
-                // Ensuite charger la liste des paiements
+                // Essayer de charger depuis le serveur
                 const response = await fetch('/admin/payments');
-                const payments = await response.json();
                 
-                // Mettre à jour le tableau
-                updatePaymentsTable(payments);
+                if (response.ok) {
+                    // Serveur disponible
+                    await loadStats();
+                    const payments = await response.json();
+                    updatePaymentsTable(payments);
+                } else {
+                    throw new Error('Serveur non disponible');
+                }
                 
             } catch (error) {
-                console.error('Erreur lors du chargement des paiements:', error);
-                alert('Erreur lors du chargement des paiements. Vérifiez que le serveur est en cours d\'exécution.');
+                console.log('⚠️ Serveur non disponible, utilisation du mode local (localStorage)');
+                
+                // Mode local : charger depuis localStorage
+                const localPayments = JSON.parse(localStorage.getItem('payments') || '[]');
+                
+                if (localPayments.length === 0) {
+                    document.getElementById('paymentsTable').innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                            <p style="font-size: 1.2rem; margin-bottom: 10px;">📭 Aucun paiement enregistré</p>
+                            <p style="font-size: 0.9rem;">Les paiements apparaîtront ici après le premier achat.</p>
+                            <p style="font-size: 0.85rem; margin-top: 20px; color: #64748b;">
+                                💡 Mode local actif (pas de serveur détecté)
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    // Calculer les stats localement
+                    const totalTickets = localPayments.reduce((sum, p) => sum + p.tickets, 0);
+                    const totalRevenue = localPayments.reduce((sum, p) => sum + p.amount, 0);
+                    const avgTicket = totalTickets > 0 ? (totalRevenue / totalTickets).toFixed(2) : 0;
+                    
+                    document.getElementById('total-tickets').textContent = totalTickets;
+                    document.getElementById('total-revenue').textContent = totalRevenue.toFixed(2) + '€';
+                    document.getElementById('avg-ticket').textContent = avgTicket + '€';
+                    document.getElementById('total-payments').textContent = localPayments.length;
+                    
+                    // Afficher les paiements
+                    updatePaymentsTable(localPayments);
+                }
             }
         }
         
