@@ -375,5 +375,20 @@
 
     <script src="config.js"></script>
     <script src="script.js"></script>
+    <script>
+        // Charger les images des petits lots depuis localStorage (lecture seule)
+        window.addEventListener('DOMContentLoaded', function() {
+            for (let i = 1; i <= 10; i++) {
+                const savedImage = localStorage.getItem(`small-prize-image-${i}`);
+                if (savedImage) {
+                    const img = document.querySelector(`.small-prize-image[data-lot="${i}"]`);
+                    if (img) {
+                        img.src = savedImage;
+                        img.style.display = 'block';
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
