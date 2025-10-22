@@ -75,12 +75,16 @@ Site de billeterie moderne et fonctionnel avec système de paiement Stripe (mode
 
 ## 🎨 Personnalisation
 
-### Modifier les lots
-1. **Lots principaux** : Cliquez sur les 3 premières cartes pour uploader et modifier
-2. **Tous les lots** : Descendez à la section "Tous les lots à gagner" (12 emplacements)
-3. Cliquez sur les images pour les uploader
-4. Cliquez sur les titres pour les modifier
-5. Les changements sont sauvegardés automatiquement
+### 🔒 Mode Édition (bachelocurieux.html)
+Pour modifier les lots et images, utilisez la page d'édition protégée :
+1. Accédez à `bachelocurieux.html` (URL secrète, ne pas partager !)
+2. Vous pouvez :
+   - Cliquer sur les images pour les uploader
+   - Cliquer sur les textes pour les modifier
+   - Les changements sont sauvegardés automatiquement
+3. Le site public (`index.html`) affiche les lots en lecture seule
+
+**Important** : Ne partagez jamais l'URL `bachelocurieux.html` ! C'est votre interface d'administration.
 
 ### Modifier les couleurs
 Éditez le fichier `styles.css` et modifiez les variables CSS au début :
