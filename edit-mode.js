@@ -8,6 +8,11 @@ let siteContent = {};
 // Charger le contenu depuis le serveur
 async function loadContentFromServer() {
     try {
+        // Vérifier que API_URL est défini
+        if (typeof API_URL === 'undefined') {
+            console.log('⚠️ API_URL non défini, impossible de charger le contenu');
+            return;
+        }
         const response = await fetch(`${API_URL}/api/content`);
         if (response.ok) {
             siteContent = await response.json();
