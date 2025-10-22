@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="api-config.js"></script>
     <script>
         // Protection par mot de passe
         (function() {
@@ -318,7 +319,7 @@
         // Charger les statistiques depuis le serveur
         async function loadStats() {
             try {
-                const response = await fetch('/admin/stats');
+                const response = await fetch(`${API_URL}/admin/stats`);
                 const stats = await response.json();
                 
                 // Afficher les statistiques globales
@@ -369,7 +370,7 @@
         async function loadPayments() {
             try {
                 // Essayer de charger depuis le serveur
-                const response = await fetch('/admin/payments');
+                const response = await fetch(`${API_URL}/admin/payments`);
                 
                 if (response.ok) {
                     // Serveur disponible
