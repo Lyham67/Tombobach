@@ -344,13 +344,30 @@
             const container = document.getElementById('vendeurs-container');
             container.innerHTML = ''; // Vider le conteneur
             
-            if (!vendeurs || Object.keys(vendeurs).length === 0) {
-                container.innerHTML = '<div style="color: white; text-align: center; grid-column: 1 / -1;">Aucun vendeur trouvé</div>';
-                return;
+            // Liste complète de tous les vendeurs
+            const tousLesVendeurs = [
+                "Dorian", "Robin", "Léopold", "Julien/Alexandre", "Gaël", 
+                "Aloys", "Marin", "Maxence R", "Emerson", "Peyo", 
+                "Antoine", "Vincent", "Mayeul", "Thomas", "Samuel", 
+                "Mathieu", "Romain", "Timéo", "Jules", "Nathanaël", 
+                "Maxence D", "Raphaël", "Lyham", "Elio", "Théophile"
+            ];
+            
+            // Créer un objet avec tous les vendeurs initialisés à 0
+            const vendeursComplets = {};
+            tousLesVendeurs.forEach(nom => {
+                vendeursComplets[nom] = { tickets: 0, montant: 0 };
+            });
+            
+            // Fusionner avec les vraies données
+            if (vendeurs) {
+                Object.keys(vendeurs).forEach(nom => {
+                    vendeursComplets[nom] = vendeurs[nom];
+                });
             }
             
-            // Convertir l'objet en tableau et trier par nombre de tickets décroissant
-            const vendeursArray = Object.entries(vendeurs)
+            // Convertir en tableau et trier par nombre de tickets décroissant
+            const vendeursArray = Object.entries(vendeursComplets)
                 .map(([nom, stats]) => ({ nom, ...stats }))
                 .sort((a, b) => b.tickets - a.tickets);
             
