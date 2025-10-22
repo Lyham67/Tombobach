@@ -377,6 +377,22 @@
     <script src="config.js"></script>
     <script src="script.js"></script>
     <script>
+        // Mode édition secret (appuie sur Ctrl+Shift+E et entre le mot de passe)
+        let editMode = false;
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+                const password = prompt('🔒 Mot de passe pour activer le mode édition :');
+                if (password === 'TOMBOG11') {
+                    editMode = true;
+                    alert('✅ Mode édition activé ! Vous pouvez maintenant modifier le site.');
+                    window.location.href = 'bachelocurieux.html';
+                } else if (password) {
+                    alert('❌ Mot de passe incorrect !');
+                }
+            }
+        });
+        
         // Charger les images depuis localStorage (lecture seule)
         window.addEventListener('DOMContentLoaded', function() {
             // Charger l'image hero
