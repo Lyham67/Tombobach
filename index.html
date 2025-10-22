@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tombobach - La grande Tombola des Bachelor Arts et Métiers !</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <!-- Barre de navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="#" class="logo">Tombobach</a>
+            </div>
+            <div class="navbar-menu">
+                <a href="#prizes" class="nav-link">Lots</a>
+                <a href="#tickets" class="nav-link">Acheter des tickets</a>
+                <a href="#all-prizes" class="nav-link">Tous les lots</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header / Hero Section -->
+    <header class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="logo">Tombobach</h1>
+            <p class="slogan">La grande Tombola des Bachelor Arts et Métiers !</p>
+            <a href="#tickets" class="cta-button">Acheter mes tickets</a>
+        </div>
+        <div class="scroll-indicator">
+            <span>↓</span>
+        </div>
+    </header>
+
+    <!-- Section Lots à Gagner -->
+    <section id="prizes" class="prizes-section">
+        <div class="container">
+            <h2 class="section-title">Les lots à gagner !</h2>
+            <div class="prizes-grid">
+                <!-- Prize Card 1 -->
+                <div class="prize-card">
+                    <div class="prize-image-placeholder" onclick="document.getElementById('upload-1').click()">
+                        <img src="prize1.jpg" alt="Lot 1" class="prize-image" id="prize-img-1">
+                        <div class="upload-overlay">
+                            <span>📷</span>
+                            <p>Ajoutez votre image</p>
+                        </div>
+                        <input type="file" id="upload-1" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleImageUpload(event, 'prize-img-1')">
+                    </div>
+                    <div class="prize-content">
+                        <h3 class="prize-title" contenteditable="true">Lot Principal</h3>
+                        <p class="prize-description" contenteditable="true">Décrivez votre lot principal ici. Cliquez pour modifier le texte.</p>
+                    </div>
+                </div>
+
+                <!-- Prize Card 2 -->
+                <div class="prize-card">
+                    <div class="prize-image-placeholder" onclick="document.getElementById('upload-2').click()">
+                        <img src="prize2.jpg" alt="Lot 2" class="prize-image" id="prize-img-2">
+                        <div class="upload-overlay">
+                            <span>📷</span>
+                            <p>Ajoutez votre image</p>
+                        </div>
+                        <input type="file" id="upload-2" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleImageUpload(event, 'prize-img-2')">
+                    </div>
+                    <div class="prize-content">
+                        <h3 class="prize-title" contenteditable="true">2ème Lot</h3>
+                        <p class="prize-description" contenteditable="true">Décrivez votre deuxième lot ici. Cliquez pour modifier le texte.</p>
+                    </div>
+                </div>
+
+                <!-- Prize Card 3 -->
+                <div class="prize-card">
+                    <div class="prize-image-placeholder" onclick="document.getElementById('upload-3').click()">
+                        <img src="prize3.jpg" alt="Lot 3" class="prize-image" id="prize-img-3">
+                        <div class="upload-overlay">
+                            <span>📷</span>
+                            <p>Ajoutez votre image</p>
+                        </div>
+                        <input type="file" id="upload-3" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleImageUpload(event, 'prize-img-3')">
+                    </div>
+                    <div class="prize-content">
+                        <h3 class="prize-title" contenteditable="true">3ème Lot</h3>
+                        <p class="prize-description" contenteditable="true">Décrivez votre troisième lot ici. Cliquez pour modifier le texte.</p>
+                    </div>
+                </div>
+
+            </div>
+            <div class="view-all-prizes">
+                <a href="#all-prizes" class="view-all-button">Voir tous les lots</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Tickets -->
+    <section id="tickets" class="tickets-section">
+        <div class="container">
+            <h2 class="section-title">Choisissez vos tickets</h2>
+            <p class="section-subtitle">Plus vous achetez, plus vous économisez !</p>
+            
+            <!-- Grille des tickets -->
+            <div class="tickets-grid">
+                <!-- Ticket Option 1 -->
+                <div class="ticket-card" data-tickets="1" data-price="2">
+                    <div class="ticket-badge">Starter</div>
+                    <div class="ticket-icon">🎫</div>
+                    <h3 class="ticket-quantity">1 Ticket</h3>
+                    <div class="ticket-price">
+                        <span class="price-amount">2€</span>
+                    </div>
+                    <ul class="ticket-features">
+                        <li>✓ 1 chance de gagner</li>
+                        <li>✓ Participation instantanée</li>
+                    </ul>
+                    <button class="ticket-button">Acheter</button>
+                </div>
+
+                <!-- Ticket Option 2 -->
+                <div class="ticket-card popular" data-tickets="3" data-price="5">
+                    <div class="ticket-badge popular-badge">Populaire</div>
+                    <div class="ticket-icon">🎫🎫🎫</div>
+                    <h3 class="ticket-quantity">3 Tickets</h3>
+                    <div class="ticket-price">
+                        <span class="price-amount">5€</span>
+                        <span class="price-unit">1,67€/ticket</span>
+                    </div>
+                    <ul class="ticket-features">
+                        <li>✓ 3 chances de gagner</li>
+                        <li>✓ Économisez 1€</li>
+                        <li>✓ Meilleur rapport qualité/prix</li>
+                    </ul>
+                    <button class="ticket-button">Acheter</button>
+                </div>
+
+                <!-- Ticket Option 3 -->
+                <div class="ticket-card" data-tickets="5" data-price="8">
+                    <div class="ticket-badge">Bon plan</div>
+                    <div class="ticket-icon">🎫⭐</div>
+                    <h3 class="ticket-quantity">5 Tickets</h3>
+                    <div class="ticket-price">
+                        <span class="price-amount">8€</span>
+                        <span class="price-unit">1,60€/ticket</span>
+                    </div>
+                    <ul class="ticket-features">
+                        <li>✓ 5 chances de gagner</li>
+                        <li>✓ Économisez 2€</li>
+                        <li>✓ Plus de chances !</li>
+                    </ul>
+                    <button class="ticket-button">Acheter</button>
+                </div>
+
+                <!-- Ticket Option 4 -->
+                <div class="ticket-card best-value" data-tickets="10" data-price="15">
+                    <div class="ticket-badge best-badge">Meilleure offre</div>
+                    <div class="ticket-icon">🎟️✨</div>
+                    <h3 class="ticket-quantity">10 Tickets</h3>
+                    <div class="ticket-price">
+                        <span class="price-amount">15€</span>
+                        <span class="price-unit">1,50€/ticket</span>
+                    </div>
+                    <ul class="ticket-features">
+                        <li>✓ 10 chances de gagner</li>
+                        <li>✓ Économisez 5€</li>
+                        <li>✓ Maximum de chances !</li>
+                        <li>✓ Soutenez l'événement</li>
+                    </ul>
+                    <button class="ticket-button">Acheter</button>
+                </div>
+            </div>
+            
+            <!-- Formule Personnalisée -->
+            <div class="custom-ticket-container">
+                <div class="custom-ticket-card">
+                    <h3 class="custom-title">🎨 Formule Personnalisée</h3>
+                    <div class="custom-controls">
+                        <button class="custom-btn" id="decrease-btn">−</button>
+                        <div class="custom-display">
+                            <div class="custom-quantity" id="custom-quantity">1</div>
+                            <div class="custom-label">ticket(s)</div>
+                        </div>
+                        <button class="custom-btn" id="increase-btn">+</button>
+                    </div>
+                    <div class="custom-pricing">
+                        <div class="custom-total">
+                            <span class="custom-total-label">Total :</span>
+                            <span class="custom-total-price" id="custom-total">2,00€</span>
+                        </div>
+                        <div class="custom-unit-price" id="custom-unit">2,00€/ticket</div>
+                    </div>
+                    <button class="ticket-button custom-buy-btn" id="custom-buy-btn">Acheter</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Tous les Lots -->
+    <section id="all-prizes" class="all-prizes-section">
+        <div class="container">
+            <h2 class="section-title">Tous les lots à gagner</h2>
+            <p class="section-subtitle">Découvrez l'ensemble des lots mis en jeu pour cette tombola !</p>
+            
+            <div class="all-prizes-grid">
+                <!-- Lot 1 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="1">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 1</p>
+                </div>
+
+                <!-- Lot 2 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="2">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 2</p>
+                </div>
+
+                <!-- Lot 3 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="3">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 3</p>
+                </div>
+
+                <!-- Lot 4 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="4">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 4</p>
+                </div>
+
+                <!-- Lot 5 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="5">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 5</p>
+                </div>
+
+                <!-- Lot 6 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="6">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 6</p>
+                </div>
+
+                <!-- Lot 7 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="7">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 7</p>
+                </div>
+
+                <!-- Lot 8 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="8">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 8</p>
+                </div>
+
+                <!-- Lot 9 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="9">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 9</p>
+                </div>
+
+                <!-- Lot 10 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="10">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 10</p>
+                </div>
+
+                <!-- Lot 11 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="11">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 11</p>
+                </div>
+
+                <!-- Lot 12 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="12">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 12</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Tombobach - Bachelor Arts et Métiers</p>
+            <p class="footer-note">Bonne chance à tous les participants ! 🍀</p>
+        </div>
+    </footer>
+
+    <!-- Modal de paiement -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Finaliser votre achat</h2>
+            <div id="orderSummary"></div>
+            <form id="paymentForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">Prénom <span class="required">*</span></label>
+                        <input type="text" id="firstName" name="firstName" required>
+                        <div class="error-message" id="firstNameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Nom <span class="required">*</span></label>
+                        <input type="text" id="lastName" name="lastName" required>
+                        <div class="error-message" id="lastNameError"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required>
+                    <div class="error-message" id="emailError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Téléphone <span class="required">*</span></label>
+                    <input type="tel" id="phone" name="phone" required>
+                    <div class="error-message" id="phoneError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="vendeur">Qui vous a fait découvrir la Tombobach ? (optionnel)</label>
+                    <input list="vendeurs-list" id="vendeur" name="vendeur" class="form-control" placeholder="Commencez à taper un prénom...">
+                    <datalist id="vendeurs-list">
+                        <option value="Dorian">
+                        <option value="Robin">
+                        <option value="Léopold">
+                        <option value="Julien/Alexandre">
+                        <option value="Gaël">
+                        <option value="Aloys">
+                        <option value="Marin">
+                        <option value="Maxence R">
+                        <option value="Emerson">
+                        <option value="Peyo">
+                        <option value="Antoine">
+                        <option value="Vincent">
+                        <option value="Mayeul">
+                        <option value="Thomas">
+                        <option value="Samuel">
+                        <option value="Mathieu">
+                        <option value="Romain">
+                        <option value="Timéo">
+                        <option value="Jules">
+                        <option value="Nathanaël">
+                        <option value="Maxence D">
+                        <option value="Raphaël">
+                        <option value="Lyham">
+                        <option value="Elio">
+                        <option value="Théophile">
+                        <option value="Autre">
+                    </datalist>
+                </div>
+                <button type="submit" class="submit-button" id="submit-payment">Continuer vers le paiement</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>📧 Email: <a href="mailto:bachelor.linternational@gmail.com">bachelor.linternational@gmail.com</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Bachelor Bordeaux</h3>
+                    <p>Promotion 2024-2025</p>
+                    <p>Tombola organisée par les étudiants</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Informations</h3>
+                    <p>Tirage au sort équitable</p>
+                    <p>Paiement sécurisé par Stripe</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Tombola Bachelor Bordeaux - Tous droits réservés</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

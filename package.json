@@ -1,0 +1,29 @@
+{
+  "name": "tombobach",
+  "version": "1.0.0",
+  "description": "Site de billeterie pour la tombola Tombobach - Bachelor Arts et Métiers",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "tombola",
+    "billeterie",
+    "stripe",
+    "paiement"
+  ],
+  "author": "Tombobach",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "nodemailer": "^6.10.1",
+    "stripe": "^14.0.0"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "nodemon": "^3.0.1"
+  }
+}

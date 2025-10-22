@@ -1,0 +1,503 @@
+// Configuration des vendeurs
+const VENDEURS = [
+    'Dorian', 'Robin', 'Léopold', 'Julien/Alexandre', 'Gaël', 'Aloys', 'Marin', 'Maxence R', 
+    'Emerson', 'Peyo', 'Antoine', 'Vincent', 'Mayeul', 'Thomas', 'Samuel', 'Mathieu', 
+    'Romain', 'Timéo', 'Jules', 'Nathanaël', 'Maxence D', 'Raphaël', 'Lyham', 'Elio', 'Théophile', 'Autre'
+];
+
+// Stockage des statistiques des vendeurs
+let vendeursStats = JSON.parse(localStorage.getItem('vendeursStats')) || {};
+
+// Initialiser les statistiques pour les nouveaux vendeurs
+VENDEURS.forEach(vendeur => {
+    if (!vendeursStats[vendeur]) {
+        vendeursStats[vendeur] = { tickets: 0, montant: 0 };
+    }
+});
+
+// Configuration des paliers de prix
+const PRICE_TIERS = [
+    { tickets: 1, price: 2 },
+    { tickets: 3, price: 5 },
+    { tickets: 5, price: 8 },
+    { tickets: 10, price: 15 }
+];
+
+// Variables globales
+let selectedTickets = 0;
+let selectedPrice = 0;
+let stripe;
+
+// Initialisation de Stripe
+if (typeof STRIPE_CONFIG !== 'undefined' && STRIPE_CONFIG.publicKey && STRIPE_CONFIG.publicKey !== 'pk_test_VOTRE_CLE_PUBLIQUE_ICI') {
+    stripe = Stripe(STRIPE_CONFIG.publicKey);
+}
+
+// Fonction pour mettre à jour les statistiques d'un vendeur
+function updateVendeurStats(vendeur, tickets, montant) {
+    if (!vendeur || !VENDEURS.includes(vendeur)) {
+        vendeur = 'Autre';
+    }
+    
+    if (!vendeursStats[vendeur]) {
+        vendeursStats[vendeur] = { tickets: 0, montant: 0 };
+    }
+    
+    vendeursStats[vendeur].tickets += tickets;
+    vendeursStats[vendeur].montant += montant;
+    
+    // Sauvegarder dans le localStorage
+    localStorage.setItem('vendeursStats', JSON.stringify(vendeursStats));
+}
+
+// Fonction pour sauvegarder les paiements en local (mode simulation)
+function savePaymentToLocalDB(paymentData) {
+    let payments = JSON.parse(localStorage.getItem('tombobach_payments') || '[]');
+    payments.push(paymentData);
+    localStorage.setItem('tombobach_payments', JSON.stringify(payments));
+    console.log('💾 Paiement sauvegardé:', paymentData);
+}
+
+// Fonction pour calculer le prix en fonction du nombre de tickets
+function calculatePrice(ticketCount) {
+    // Si le nombre de tickets est supérieur ou égal au plus grand palier
+    if (ticketCount >= PRICE_TIERS[PRICE_TIERS.length - 1].tickets) {
+        const pricePerTicket = PRICE_TIERS[PRICE_TIERS.length - 1].price / PRICE_TIERS[PRICE_TIERS.length - 1].tickets;
+        const total = Math.max(ticketCount, ticketCount * Math.max(pricePerTicket, 1));
+        return {
+            total: Math.round(total * 100) / 100,
+            unitPrice: Math.max(1, Math.round((total / ticketCount) * 100) / 100)
+        };
+    }
+
+    // Trouver les deux paliers entre lesquels on se situe
+    let lowerTier = PRICE_TIERS[0];
+    let upperTier = PRICE_TIERS[1];
+    
+    for (let i = 0; i < PRICE_TIERS.length - 1; i++) {
+        if (ticketCount >= PRICE_TIERS[i].tickets && ticketCount <= PRICE_TIERS[i + 1].tickets) {
+            lowerTier = PRICE_TIERS[i];
+            upperTier = PRICE_TIERS[i + 1];
+            break;
+        }
+    }
+
+    // Calculer le prix unitaire en fonction de la position entre les deux paliers
+    const position = (ticketCount - lowerTier.tickets) / (upperTier.tickets - lowerTier.tickets);
+    const pricePerTicket = lowerTier.price / lowerTier.tickets + 
+                         (upperTier.price / upperTier.tickets - lowerTier.price / lowerTier.tickets) * position;
+    
+    // S'assurer que le prix unitaire ne descende pas en dessous de 1€
+    const safePricePerTicket = Math.max(1, pricePerTicket);
+    const total = ticketCount * safePricePerTicket;
+    
+    return {
+        total: Math.round(total * 100) / 100,
+        unitPrice: safePricePerTicket
+    };
+}
+
+// Mettre à jour l'affichage des prix
+function updatePricing(quantity) {
+    const quantityNum = parseInt(quantity) || 1;
+    const { total, unitPrice } = calculatePrice(quantityNum);
+    
+    // Mettre à jour l'interface
+    const quantityDisplay = document.getElementById('quantity-display');
+    const unitPriceElement = document.getElementById('unit-price');
+    const totalPriceElement = document.getElementById('total-price');
+    
+    if (quantityDisplay) quantityDisplay.textContent = quantityNum;
+    if (unitPriceElement) unitPriceElement.textContent = unitPrice.toFixed(2) + ' €';
+    if (totalPriceElement) totalPriceElement.textContent = total.toFixed(2) + ' €';
+    
+    // Mettre à jour le bouton de réduction
+    const decreaseBtn = document.getElementById('decrease-btn');
+    if (decreaseBtn) decreaseBtn.disabled = quantityNum <= 1;
+    
+    // Mettre à jour l'animation du ticket
+    const ticketEmoji = document.querySelector('.ticket-display');
+    if (ticketEmoji) {
+        ticketEmoji.textContent = '🎫'.repeat(Math.min(quantityNum, 10)) + (quantityNum > 10 ? '✨' : '');
+    }
+}
+
+// Initialisation de l'application
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation des variables du DOM
+    const modal = document.getElementById('paymentModal');
+    const closeBtn = document.querySelector('.close');
+    const ticketButtons = document.querySelectorAll('.ticket-button');
+    const paymentForm = document.getElementById('payment-form');
+    const ctaButton = document.querySelector('.cta-button');
+    const scrollIndicator = document.querySelector('.scroll-indicator');
+    
+    // Gestion du scroll smooth pour le bouton CTA
+    if (ctaButton) {
+        ctaButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            const ticketsSection = document.querySelector('#tickets');
+            if (ticketsSection) {
+                ticketsSection.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    }
+
+    // Animation du scroll indicator
+    if (scrollIndicator) {
+        scrollIndicator.addEventListener('click', function() {
+            const prizesSection = document.querySelector('#prizes');
+            if (prizesSection) {
+                prizesSection.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    }
+
+    // Animation au scroll pour les cartes
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Observer toutes les cartes
+    document.querySelectorAll('.ticket-card, .prize-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s ease';
+        observer.observe(card);
+    });
+
+    // Gestion des boutons de ticket
+    ticketButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const card = this.closest('.ticket-card');
+            selectedTickets = parseInt(card.dataset.tickets);
+            selectedPrice = parseFloat(card.dataset.price);
+            
+            // Mettre à jour le résumé de commande
+            const orderSummary = document.getElementById('orderSummary');
+            if (orderSummary) {
+                orderSummary.innerHTML = `
+                    <h3 style="margin-bottom: 15px; color: var(--dark);">Résumé de votre commande</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span><strong>Nombre de tickets:</strong></span>
+                        <span>${selectedTickets} ticket${selectedTickets > 1 ? 's' : ''}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span><strong>Prix unitaire:</strong></span>
+                        <span>${(selectedPrice / selectedTickets).toFixed(2)}€</span>
+                    </div>
+                    <hr style="margin: 15px 0; border: none; border-top: 2px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 700;">
+                        <span>Total:</span>
+                        <span style="color: #667eea;">${selectedPrice}€</span>
+                    </div>
+                `;
+            }
+            
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    });
+
+    // Fermer le modal
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        };
+    }
+
+    // Fermer le modal en cliquant à l'extérieur
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    };
+
+    // Gestion du formulaire de paiement
+    if (paymentForm) {
+        paymentForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Valider le formulaire
+            if (!validateForm()) {
+                return;
+            }
+            
+            // Récupérer les valeurs du formulaire
+            const firstName = document.getElementById('firstName')?.value.trim() || '';
+            const lastName = document.getElementById('lastName')?.value.trim() || '';
+            const email = document.getElementById('email')?.value.trim() || '';
+            const phone = document.getElementById('phone')?.value.trim() || '';
+            const vendeur = document.getElementById('vendeur')?.value.trim() || 'Aucun';
+            
+            // Mettre à jour les statistiques du vendeur
+            if (vendeur && vendeur !== 'Aucun') {
+                updateVendeurStats(vendeur, selectedTickets, selectedPrice);
+            }
+            
+            // Désactiver le bouton de soumission
+            const submitButton = document.getElementById('submit-payment');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Traitement en cours...';
+            }
+            
+            // Mode simulation si Stripe n'est pas configuré
+            if (!stripe) {
+                console.log('Mode simulation - Paiement réussi !');
+                
+                const paymentData = {
+                    id: Date.now(),
+                    firstName,
+                    lastName,
+                    email,
+                    phone,
+                    vendeur,
+                    tickets: selectedTickets,
+                    amount: selectedPrice,
+                    date: new Date().toISOString(),
+                    status: 'success (simulation)'
+                };
+                
+                savePaymentToLocalDB(paymentData);
+                
+                if (modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+                
+                alert('Paiement simulé avec succès !');
+                
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Paiement réussi !';
+                }
+                
+                return;
+            }
+            
+            // Logique de paiement Stripe ici...
+            // (Le code existant pour le traitement Stripe peut être ajouté ici)
+        });
+    }
+    
+    // Gestion des images des lots principaux
+    document.querySelectorAll('.prize-image-placeholder').forEach((placeholder, index) => {
+        placeholder.addEventListener('click', function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = placeholder.querySelector('.prize-image');
+                        if (img) {
+                            img.src = event.target.result;
+                            img.classList.add('loaded');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            
+            input.click();
+        });
+    });
+
+    // Gestion des images des petits lots
+    document.querySelectorAll('.small-prize-image-placeholder').forEach((placeholder, index) => {
+        placeholder.addEventListener('click', function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = placeholder.querySelector('.small-prize-image');
+                        if (img) {
+                            img.src = event.target.result;
+                            img.classList.add('loaded');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            
+            input.click();
+        });
+    });
+
+    // Effet parallaxe léger sur le hero
+    window.addEventListener('scroll', function() {
+        const scrolled = window.pageYOffset;
+        const hero = document.querySelector('.hero');
+        if (hero && scrolled < window.innerHeight) {
+            hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+        }
+    });
+
+    // Sauvegarder les modifications de texte dans le localStorage
+    document.querySelectorAll('[contenteditable="true"]').forEach(element => {
+        // Charger le contenu sauvegardé
+        const savedContent = localStorage.getItem(`content-${element.id}`);
+        if (savedContent) {
+            element.textContent = savedContent;
+        }
+        
+        // Sauvegarder lors de la modification
+        element.addEventListener('blur', function() {
+            localStorage.setItem(`content-${this.id}`, this.textContent);
+        });
+    });
+
+    // Initialisation du sélecteur de quantité personnalisé
+    const quantityInput = document.getElementById('ticket-quantity');
+    const decreaseBtn = document.getElementById('decrease-btn');
+    const increaseBtn = document.getElementById('increase-btn');
+    const checkoutBtn = document.getElementById('checkout-btn');
+    
+    if (decreaseBtn && quantityInput) {
+        decreaseBtn.addEventListener('click', function() {
+            let value = parseInt(quantityInput.value) || 1;
+            if (value > 1) {
+                value--;
+                quantityInput.value = value;
+                updatePricing(value);
+            }
+        });
+    }
+    
+    if (increaseBtn && quantityInput) {
+        increaseBtn.addEventListener('click', function() {
+            let value = parseInt(quantityInput.value) || 1;
+            value++;
+            quantityInput.value = value;
+            updatePricing(value);
+        });
+    }
+    
+    if (quantityInput) {
+        quantityInput.addEventListener('input', function() {
+            let value = parseInt(this.value) || 1;
+            if (value < 1) value = 1;
+            this.value = value;
+            updatePricing(value);
+        });
+    }
+    
+    if (checkoutBtn && quantityInput) {
+        checkoutBtn.addEventListener('click', function() {
+            const quantity = parseInt(quantityInput.value) || 1;
+            const { total } = calculatePrice(quantity);
+            
+            // Mettre à jour les variables globales
+            selectedTickets = quantity;
+            selectedPrice = total;
+            
+            // Afficher le modal de paiement
+            const orderSummary = document.getElementById('orderSummary');
+            if (orderSummary) {
+                orderSummary.innerHTML = `
+                    <h3 style="margin-bottom: 15px; color: var(--dark);">Résumé de votre commande</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span><strong>Nombre de tickets:</strong></span>
+                        <span>${quantity} ticket${quantity > 1 ? 's' : ''}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span><strong>Prix unitaire:</strong></span>
+                        <span>${(total / quantity).toFixed(2)}€</span>
+                    </div>
+                    <hr style="margin: 15px 0; border: none; border-top: 2px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 700;">
+                        <span>Total:</span>
+                        <span style="color: #667eea;">${total.toFixed(2)}€</span>
+                    </div>
+                `;
+            }
+            
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    }
+    
+    console.log('🎉 Site Tombobach chargé avec succès !');
+    console.log('💡 Cliquez sur les zones d\'image pour ajouter vos photos de lots');
+    console.log('✏️ Les titres et descriptions sont éditables - cliquez dessus pour les modifier');
+});
+
+// Fonction de validation du formulaire
+function validateForm() {
+    let isValid = true;
+    
+    // Réinitialiser les messages d'erreur
+    document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+    
+    // Valider le prénom
+    const firstName = document.getElementById('firstName');
+    if (!firstName || !firstName.value.trim()) {
+        document.getElementById('firstNameError').textContent = 'Le prénom est requis';
+        isValid = false;
+    }
+    
+    // Valider le nom
+    const lastName = document.getElementById('lastName');
+    if (!lastName || !lastName.value.trim()) {
+        document.getElementById('lastNameError').textContent = 'Le nom est requis';
+        isValid = false;
+    }
+    
+    // Valider l'email
+    const email = document.getElementById('email');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !email.value.trim()) {
+        document.getElementById('emailError').textContent = 'L\'email est requis';
+        isValid = false;
+    } else if (!emailRegex.test(email.value)) {
+        document.getElementById('emailError').textContent = 'Veuillez entrer un email valide';
+        isValid = false;
+    }
+    
+    // Valider le téléphone
+    const phone = document.getElementById('phone');
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phone || !phone.value.trim()) {
+        document.getElementById('phoneError').textContent = 'Le numéro de téléphone est requis';
+        isValid = false;
+    } else if (!phoneRegex.test(phone.value.replace(/\s/g, ''))) {
+        document.getElementById('phoneError').textContent = 'Veuillez entrer un numéro de téléphone valide';
+        isValid = false;
+    }
+    
+    return isValid;
+}

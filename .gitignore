@@ -1,0 +1,22 @@
+# Dépendances
+node_modules/
+package-lock.json
+
+# Fichiers sensibles
+.env
+
+# Base de données locale
+payments_database.json
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+*.log
+
+# Fichiers de backup
+*-backup.js
+*.bak
+
+# IDE
+.vscode/
+.idea/
