@@ -2,16 +2,15 @@
 // CONFIGURATION
 // ============================================
 
-// Configuration Stripe
-const STRIPE_PUBLIC_KEY = 'pk_test_51SKKby9939hQuArOW2s0kzvHxm6eM0PCFUfO340NHoPYFCX5naEnb6GVsFc65pSm8tWwP6IoYGSK1W7LnhzYF4SF0014ejUmLw';
+// Configuration Stripe - Utilise la clé depuis config.js
 let stripe = null;
 
 // Initialiser Stripe
-if (typeof Stripe !== 'undefined') {
-    stripe = Stripe(STRIPE_PUBLIC_KEY);
-    console.log('✅ Stripe initialisé');
+if (typeof Stripe !== 'undefined' && typeof STRIPE_CONFIG !== 'undefined') {
+    stripe = Stripe(STRIPE_CONFIG.publicKey);
+    console.log('✅ Stripe initialisé avec la clé:', STRIPE_CONFIG.publicKey.substring(0, 20) + '...');
 } else {
-    console.error('❌ Stripe.js non chargé');
+    console.error('❌ Stripe.js ou STRIPE_CONFIG non chargé');
 }
 
 const VENDEURS = [
