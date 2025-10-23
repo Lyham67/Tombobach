@@ -32,6 +32,11 @@ const transporter = nodemailer.createTransport({
 
 // Fonction pour envoyer un email de confirmation
 async function sendConfirmationEmail(customerEmail, customerName, tickets, ticketNumbers, customerPhone) {
+    console.log('📧 Tentative d\'envoi d\'email à:', customerEmail);
+    console.log('📧 Nom:', customerName);
+    console.log('📧 Tickets:', ticketNumbers);
+    console.log('📧 Téléphone:', customerPhone);
+    
     const ticketNumbersStr = ticketNumbers.join(', ');
     
     const mailOptions = {
@@ -278,6 +283,40 @@ app.get('/admin/payments', (req, res) => {
     }
 });
 
+// Route pour corriger les paiements sans vendeur
+app.post('/admin/fix-vendeurs', (req, res) => {
+    try {
+        const { password } = req.body;
+        
+        if (password !== 'TOMBOG11') {
+            return res.status(403).json({ error: 'Mot de passe incorrect' });
+        }
+        
+        const db = readDatabase();
+        let fixed = 0;
+        
+        // Ajouter "Non spécifié" aux paiements sans vendeur
+        db.payments.forEach(payment => {
+            if (!payment.vendeur) {
+                payment.vendeur = 'Non spécifié';
+                fixed++;
+            }
+            if (!payment.amount) {
+                payment.amount = 2; // 2€ par défaut
+            }
+        });
+        
+        if (writeDatabase(db)) {
+            res.json({ success: true, message: `${fixed} paiements corrigés` });
+        } else {
+            res.status(500).json({ error: 'Erreur lors de la sauvegarde' });
+        }
+    } catch (error) {
+        console.error('Erreur correction:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Route pour importer des paiements depuis un CSV
 app.post('/admin/import', (req, res) => {
     try {
@@ -388,10 +427,25 @@ app.post('/api/content', (req, res) => {
     }
 });
 
+// Tester la connexion email au démarrage
+async function testEmailConnection() {
+    try {
+        await transporter.verify();
+        console.log('✅ Connexion email OK');
+        console.log(`📧 Email configuré: ${process.env.EMAIL_USER}`);
+    } catch (error) {
+        console.error('❌ Erreur connexion email:', error.message);
+        console.error('⚠️  Vérifiez vos variables d\'environnement EMAIL_USER et EMAIL_PASS');
+    }
+}
+
 // Démarrer le serveur
 app.listen(PORT, () => {
     console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
     console.log(`📊 Interface admin: http://localhost:${PORT}/admin.html`);
     console.log(`💾 Base de données: ${DB_FILE}`);
     console.log(`🖼️  Contenu du site: ${CONTENT_FILE}`);
+    
+    // Tester la connexion email
+    testEmailConnection();
 });
