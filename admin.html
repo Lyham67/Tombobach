@@ -203,6 +203,23 @@
             box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
         }
 
+        .fix-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .fix-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -326,6 +343,7 @@
                     <button class="refresh-btn" onclick="loadPayments()">🔄 Actualiser</button>
                     <button class="export-btn" onclick="exportToCSV()">📥 Exporter CSV</button>
                     <button class="import-btn" onclick="document.getElementById('csv-upload').click()">📤 Importer CSV</button>
+                    <button class="fix-btn" onclick="fixVendeurs()">🔧 Corriger vendeurs</button>
                     <input type="file" id="csv-upload" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
                 </div>
             </div>
@@ -599,6 +617,35 @@
             } catch (error) {
                 console.error('Erreur lors de l\'import CSV:', error);
                 alert(`Erreur lors de l'importation: ${error.message}`);
+            }
+        }
+
+        // Corriger les vendeurs manquants
+        async function fixVendeurs() {
+            const password = prompt('🔒 Mot de passe pour corriger les données :');
+            if (password !== 'TOMBOG11') {
+                alert('❌ Mot de passe incorrect !');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/admin/fix-vendeurs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(`✅ ${result.message}`);
+                    loadPayments();
+                    loadStats();
+                } else {
+                    alert('❌ ' + (result.error || 'Erreur lors de la correction'));
+                }
+            } catch (error) {
+                console.error('Erreur lors de la correction:', error);
+                alert(`Erreur: ${error.message}`);
             }
         }
 
