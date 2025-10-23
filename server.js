@@ -46,6 +46,11 @@ async function sendConfirmationEmail(customerEmail, customerName, tickets, ticke
             </head>
             <body>
                 <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
+                    <!-- Logo -->
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img src="https://raw.githubusercontent.com/Lyham67/Tombobach/main/logo-bachelor.png" alt="Logo Bachelor" style="max-width: 200px; height: auto;">
+                    </div>
+                    
                     <!-- En-tête -->
                     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
                         <h1 style="color: white; margin: 0;">🎟️ Tombola Bachelor Bordeaux</h1>
@@ -68,8 +73,8 @@ async function sendConfirmationEmail(customerEmail, customerName, tickets, ticke
                         </div>
                         
                         <p style="color: #475569; font-size: 16px;">
-                            <strong>Date de tirage : 13/12/25</strong><br>
-                            Université Arts et Métier
+                            <strong>Date de tirage : 18/10/2025</strong><br>
+                            Université Arts et Métiers
                         </p>
                         
                         <p style="color: #475569; font-size: 16px;">
