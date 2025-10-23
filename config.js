@@ -4,7 +4,7 @@
 
 const STRIPE_CONFIG = {
     // Clé publique LIVE Stripe (commence par pk_live_)
-    publicKey: 'pk_live_51SKKbHGG85KygeKeVjzQb9CCp4GuZITMtkMWD1I4E1u4doFQ8uEPedkoxBDCHNJzbN37QXlJS3APNIj77euqfuP7003Gy5nguJ'
+    publicKey: 'pk_test_51SKKby9939hQuArOW2s0kzvHxm6eM0PCFUfO340NHoPYFCX5naEnb6GVsFc65pSm8tWwP6IoYGSK1W7LnhzYF4SF0014ejUmLw'
 };
 
 // Ne partagez JAMAIS votre clé secrète dans le code frontend !
