@@ -59,23 +59,6 @@ async function sendConfirmationEmail(customerEmail, customerName, tickets, ticke
                             Votre achat a bien été confirmé ! Vous avez acheté <strong>${tickets} ticket(s)</strong> pour notre tombola.
                         </p>
                         
-                        <!-- Ticket 1 (recto) -->
-                        <div class="ticket">
-                            <img src="https://raw.githubusercontent.com/Lyham67/Tombobach/main/email-images/ticket-recto.png" alt="Ticket recto" style="width: 100%; height: auto;">
-                            <div class="ticket-number">${ticketNumbersStr}</div>
-                            <div class="customer-info">
-                                <div><strong>NAME:</strong> ${customerName}</div>
-                                <div><strong>PHONE:</strong> ${customerPhone}</div>
-                                <div><strong>EMAIL:</strong> ${customerEmail}</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Ticket 2 (verso) -->
-                        <div class="ticket" style="margin-top: 30px;">
-                            <img src="https://raw.githubusercontent.com/Lyham67/Tombobach/main/email-images/ticket-verso.png" alt="Ticket verso" style="width: 100%; height: auto;">
-                            <div class="ticket-number">${ticketNumbersStr}</div>
-                        </div>
-                        
                         <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
                             <h3 style="color: #1e293b; margin-top: 0;">📋 Récapitulatif</h3>
                             <p style="margin: 5px 0;"><strong>Nom:</strong> ${customerName}</p>
