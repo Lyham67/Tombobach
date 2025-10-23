@@ -7,6 +7,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="api-config.js"></script>
+    <script>
+        // Protection par mot de passe
+        (function() {
+            const password = sessionStorage.getItem('admin_auth');
+            if (password !== 'TOMBOG11') {
+                const userPassword = prompt('🔒 Mot de passe administrateur requis :');
+                if (userPassword !== 'TOMBOG11') {
+                    alert('❌ Mot de passe incorrect !');
+                    window.location.href = 'index.html';
+                } else {
+                    sessionStorage.setItem('admin_auth', 'TOMBOG11');
+                }
+            }
+        })();
+    </script>
     <style>
         * {
             margin: 0;
@@ -303,7 +319,7 @@
         // Charger les statistiques depuis le serveur
         async function loadStats() {
             try {
-                const response = await fetch('/admin/stats');
+                const response = await fetch(`${API_URL}/admin/stats`);
                 const stats = await response.json();
                 
                 // Afficher les statistiques globales
@@ -328,13 +344,30 @@
             const container = document.getElementById('vendeurs-container');
             container.innerHTML = ''; // Vider le conteneur
             
-            if (!vendeurs || Object.keys(vendeurs).length === 0) {
-                container.innerHTML = '<div style="color: white; text-align: center; grid-column: 1 / -1;">Aucun vendeur trouvé</div>';
-                return;
+            // Liste complète de tous les vendeurs
+            const tousLesVendeurs = [
+                "Dorian", "Robin", "Léopold", "Julien/Alexandre", "Gaël", 
+                "Aloys", "Marin", "Maxence R", "Emerson", "Peyo", 
+                "Antoine", "Vincent", "Mayeul", "Thomas", "Samuel", 
+                "Mathieu", "Romain", "Timéo", "Jules", "Nathanaël", 
+                "Maxence D", "Raphaël", "Lyham", "Elio", "Théophile"
+            ];
+            
+            // Créer un objet avec tous les vendeurs initialisés à 0
+            const vendeursComplets = {};
+            tousLesVendeurs.forEach(nom => {
+                vendeursComplets[nom] = { tickets: 0, montant: 0 };
+            });
+            
+            // Fusionner avec les vraies données
+            if (vendeurs) {
+                Object.keys(vendeurs).forEach(nom => {
+                    vendeursComplets[nom] = vendeurs[nom];
+                });
             }
             
-            // Convertir l'objet en tableau et trier par nombre de tickets décroissant
-            const vendeursArray = Object.entries(vendeurs)
+            // Convertir en tableau et trier par nombre de tickets décroissant
+            const vendeursArray = Object.entries(vendeursComplets)
                 .map(([nom, stats]) => ({ nom, ...stats }))
                 .sort((a, b) => b.tickets - a.tickets);
             
@@ -350,22 +383,51 @@
             });
         }
         
-        // Charger les paiements depuis le serveur
+        // Charger les paiements depuis le serveur OU localStorage
         async function loadPayments() {
             try {
-                // Charger d'abord les statistiques
-                await loadStats();
+                // Essayer de charger depuis le serveur
+                const response = await fetch(`${API_URL}/admin/payments`);
                 
-                // Ensuite charger la liste des paiements
-                const response = await fetch('/admin/payments');
-                const payments = await response.json();
-                
-                // Mettre à jour le tableau
-                updatePaymentsTable(payments);
+                if (response.ok) {
+                    // Serveur disponible
+                    await loadStats();
+                    const payments = await response.json();
+                    updatePaymentsTable(payments);
+                } else {
+                    throw new Error('Serveur non disponible');
+                }
                 
             } catch (error) {
-                console.error('Erreur lors du chargement des paiements:', error);
-                alert('Erreur lors du chargement des paiements. Vérifiez que le serveur est en cours d\'exécution.');
+                console.log('⚠️ Serveur non disponible, utilisation du mode local (localStorage)');
+                
+                // Mode local : charger depuis localStorage
+                const localPayments = JSON.parse(localStorage.getItem('payments') || '[]');
+                
+                if (localPayments.length === 0) {
+                    document.getElementById('paymentsTable').innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                            <p style="font-size: 1.2rem; margin-bottom: 10px;">📭 Aucun paiement enregistré</p>
+                            <p style="font-size: 0.9rem;">Les paiements apparaîtront ici après le premier achat.</p>
+                            <p style="font-size: 0.85rem; margin-top: 20px; color: #64748b;">
+                                💡 Mode local actif (pas de serveur détecté)
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    // Calculer les stats localement
+                    const totalTickets = localPayments.reduce((sum, p) => sum + p.tickets, 0);
+                    const totalRevenue = localPayments.reduce((sum, p) => sum + p.amount, 0);
+                    const avgTicket = totalTickets > 0 ? (totalRevenue / totalTickets).toFixed(2) : 0;
+                    
+                    document.getElementById('total-tickets').textContent = totalTickets;
+                    document.getElementById('total-revenue').textContent = totalRevenue.toFixed(2) + '€';
+                    document.getElementById('avg-ticket').textContent = avgTicket + '€';
+                    document.getElementById('total-payments').textContent = localPayments.length;
+                    
+                    // Afficher les paiements
+                    updatePaymentsTable(localPayments);
+                }
             }
         }
         

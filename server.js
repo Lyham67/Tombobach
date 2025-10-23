@@ -9,7 +9,7 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -256,9 +256,67 @@ app.get('/admin/stats', (req, res) => {
     }
 });
 
+// ============================================
+// ROUTES POUR LA GESTION DU CONTENU (IMAGES/TEXTES)
+// ============================================
+
+const CONTENT_FILE = path.join(__dirname, 'site_content.json');
+
+// Charger le contenu du site
+function loadSiteContent() {
+    try {
+        if (fs.existsSync(CONTENT_FILE)) {
+            const data = fs.readFileSync(CONTENT_FILE, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (error) {
+        console.error('Erreur lecture contenu:', error);
+    }
+    return {
+        heroImage: null,
+        prizes: {},
+        smallPrizes: {}
+    };
+}
+
+// Sauvegarder le contenu du site
+function saveSiteContent(content) {
+    try {
+        fs.writeFileSync(CONTENT_FILE, JSON.stringify(content, null, 2));
+        return true;
+    } catch (error) {
+        console.error('Erreur sauvegarde contenu:', error);
+        return false;
+    }
+}
+
+// Route pour récupérer le contenu du site
+app.get('/api/content', (req, res) => {
+    const content = loadSiteContent();
+    res.json(content);
+});
+
+// Route pour sauvegarder le contenu du site (protégée par mot de passe)
+app.post('/api/content', (req, res) => {
+    const { password, content } = req.body;
+    
+    // Vérifier le mot de passe
+    if (password !== 'TOMBOG11') {
+        return res.status(403).json({ error: 'Mot de passe incorrect' });
+    }
+    
+    // Sauvegarder le contenu
+    if (saveSiteContent(content)) {
+        res.json({ success: true, message: 'Contenu sauvegardé avec succès' });
+    } else {
+        res.status(500).json({ error: 'Erreur lors de la sauvegarde' });
+    }
+});
+
 // Démarrer le serveur
 app.listen(PORT, () => {
     console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
     console.log(`📊 Interface admin: http://localhost:${PORT}/admin.html`);
     console.log(`💾 Base de données: ${DB_FILE}`);
+    console.log(`🖼️  Contenu du site: ${CONTENT_FILE}`);
 });
