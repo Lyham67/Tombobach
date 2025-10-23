@@ -5,7 +5,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 require('dotenv').config();
 
 const app = express();
@@ -19,69 +19,110 @@ app.use(express.static('.'));
 // Initialiser Stripe avec la clé secrète
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// Configuration de Nodemailer
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 587,
-    secure: false,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
+// Initialiser Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Fonction pour envoyer un email de confirmation
-async function sendConfirmationEmail(customerEmail, customerName, tickets, ticketNumbers) {
-    const mailOptions = {
-        from: `"Tombola Bachelor Bordeaux" <${process.env.EMAIL_USER}>`,
-        to: customerEmail,
-        subject: '🎉 Confirmation de votre achat - Tombola Bachelor',
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                    <h1 style="color: white; margin: 0;">🎟️ Tombola Bachelor Bordeaux</h1>
-                </div>
-                
-                <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px;">
-                    <h2 style="color: #1e293b;">Merci pour votre participation !</h2>
-                    
-                    <p style="color: #475569; font-size: 16px;">Bonjour ${customerName},</p>
-                    
-                    <p style="color: #475569; font-size: 16px;">
-                        Votre achat a bien été confirmé ! Vous avez acheté <strong>${tickets} ticket(s)</strong> pour notre tombola.
-                    </p>
-                    
-                    <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h3 style="color: #1e293b; margin-top: 0;">Vos numéros de tickets :</h3>
-                        <p style="color: #667eea; font-size: 24px; font-weight: bold; margin: 10px 0;">
-                            ${ticketNumbers.join(', ')}
-                        </p>
+async function sendConfirmationEmail(customerEmail, customerName, tickets, ticketNumbers, customerPhone) {
+    console.log('📧 Tentative d\'envoi d\'email à:', customerEmail);
+    console.log('📧 Nom:', customerName);
+    console.log('📧 Tickets:', ticketNumbers);
+    console.log('📧 Téléphone:', customerPhone);
+    
+    const ticketNumbersStr = ticketNumbers.join(', ');
+    
+    const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+                    .ticket { position: relative; width: 100%; max-width: 600px; margin: 20px auto; }
+                    .ticket img { width: 100%; height: auto; display: block; }
+                    .ticket-number { position: absolute; top: 50px; right: 80px; font-size: 32px; font-weight: bold; color: #5a3e2b; }
+                    .customer-info { position: absolute; top: 95px; right: 80px; font-size: 14px; color: #000; line-height: 1.8; text-align: left; }
+                </style>
+            </head>
+            <body>
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
+                    <!-- En-tête -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+                        <h1 style="color: white; margin: 0;">🎟️ Tombola Bachelor Bordeaux</h1>
                     </div>
                     
-                    <p style="color: #475569; font-size: 16px;">
-                        Conservez bien cet email ! Il contient vos numéros de tickets pour le tirage au sort.
-                    </p>
-                    
-                    <p style="color: #475569; font-size: 16px;">
-                        Bonne chance ! 🍀
-                    </p>
-                    
-                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
-                    
-                    <p style="color: #94a3b8; font-size: 14px;">
-                        Pour toute question, contactez-nous à <a href="mailto:bachelor.linternational@gmail.com" style="color: #667eea;">bachelor.linternational@gmail.com</a>
-                    </p>
-                    
-                    <p style="color: #94a3b8; font-size: 14px;">
-                        © 2025 Tombola Bachelor Bordeaux - Promotion 2024-2025
-                    </p>
+                    <!-- Corps -->
+                    <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px;">
+                        <h2 style="color: #1e293b;">Merci pour votre participation !</h2>
+                        <p style="color: #475569; font-size: 16px;">Bonjour ${customerName},</p>
+                        <p style="color: #475569; font-size: 16px;">
+                            Votre achat a bien été confirmé ! Vous avez acheté <strong>${tickets} ticket(s)</strong> pour notre tombola.
+                        </p>
+                        
+                        <!-- Ticket 1 (recto) -->
+                        <div class="ticket">
+                            <img src="https://raw.githubusercontent.com/Lyham67/Tombobach/main/email-images/ticket-recto.png" alt="Ticket recto" style="width: 100%; height: auto;">
+                            <div class="ticket-number">${ticketNumbersStr}</div>
+                            <div class="customer-info">
+                                <div><strong>NAME:</strong> ${customerName}</div>
+                                <div><strong>PHONE:</strong> ${customerPhone}</div>
+                                <div><strong>EMAIL:</strong> ${customerEmail}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Ticket 2 (verso) -->
+                        <div class="ticket" style="margin-top: 30px;">
+                            <img src="https://raw.githubusercontent.com/Lyham67/Tombobach/main/email-images/ticket-verso.png" alt="Ticket verso" style="width: 100%; height: auto;">
+                            <div class="ticket-number">${ticketNumbersStr}</div>
+                        </div>
+                        
+                        <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                            <h3 style="color: #1e293b; margin-top: 0;">📋 Récapitulatif</h3>
+                            <p style="margin: 5px 0;"><strong>Nom:</strong> ${customerName}</p>
+                            <p style="margin: 5px 0;"><strong>Email:</strong> ${customerEmail}</p>
+                            <p style="margin: 5px 0;"><strong>Téléphone:</strong> ${customerPhone}</p>
+                            <p style="margin: 5px 0;"><strong>Numéros de tickets:</strong> <span style="color: #667eea; font-weight: bold;">${ticketNumbersStr}</span></p>
+                        </div>
+                        
+                        <p style="color: #475569; font-size: 16px;">
+                            <strong>Date de tirage : 13/12/25</strong><br>
+                            Université Arts et Métier
+                        </p>
+                        
+                        <p style="color: #475569; font-size: 16px;">
+                            Conservez bien cet email ! Il contient vos numéros de tickets pour le tirage au sort.
+                        </p>
+                        
+                        <p style="color: #475569; font-size: 16px;">Bonne chance ! 🍀</p>
+                        
+                        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+                        
+                        <p style="color: #94a3b8; font-size: 14px;">
+                            Pour toute question, contactez-nous à <a href="mailto:bachelor.linternational@gmail.com" style="color: #667eea;">bachelor.linternational@gmail.com</a>
+                        </p>
+                        
+                        <p style="color: #94a3b8; font-size: 14px;">
+                            © 2025 Tombola Bachelor Bordeaux - Promotion 2024-2025
+                        </p>
+                    </div>
                 </div>
-            </div>
-        `
-    };
+            </body>
+            </html>
+        `;
 
     try {
-        await transporter.sendMail(mailOptions);
+        const { data, error } = await resend.emails.send({
+            from: 'Tombola Bachelor <onboarding@resend.dev>',
+            to: [customerEmail],
+            subject: '🎉 Confirmation de votre achat - Tombola Bachelor',
+            html: htmlContent
+        });
+
+        if (error) {
+            console.error('❌ Erreur envoi email:', error);
+            return false;
+        }
+
         console.log('✅ Email envoyé à:', customerEmail);
         return true;
     } catch (error) {
@@ -142,8 +183,8 @@ app.post('/create-checkout-session', async (req, res) => {
                 },
             ],
             mode: 'payment',
-            success_url: `${req.headers.origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${req.headers.origin}/?canceled=true`,
+            success_url: `https://lyham67.github.io/Tombobach/success.html?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `https://lyham67.github.io/Tombobach/?canceled=true`,
             customer_email: customerInfo.email,
             metadata: {
                 tickets: tickets.toString(),
@@ -165,6 +206,8 @@ app.post('/create-checkout-session', async (req, res) => {
 app.post('/save-payment', async (req, res) => {
     try {
         const { firstName, lastName, email, phone, tickets, amount, paymentIntentId, vendeur } = req.body;
+        
+        console.log('💾 Sauvegarde paiement - Vendeur reçu:', vendeur);
 
         // Lire la base de données
         const db = readDatabase();
@@ -197,6 +240,8 @@ app.post('/save-payment', async (req, res) => {
                 lastName,
                 email,
                 phone,
+                vendeur: vendeur || 'Non spécifié',
+                amount: amount / tickets,
                 date: new Date().toISOString()
             };
             db.payments.push(ticketEntry);
@@ -215,7 +260,7 @@ app.post('/save-payment', async (req, res) => {
         // Sauvegarder
         if (writeDatabase(db)) {
             // Envoyer l'email de confirmation
-            sendConfirmationEmail(email, `${firstName} ${lastName}`, tickets, ticketNumbers)
+            sendConfirmationEmail(email, `${firstName} ${lastName}`, tickets, ticketNumbers, phone)
                 .then(() => console.log('📧 Email de confirmation envoyé'))
                 .catch(err => console.error('❌ Erreur email:', err));
             
@@ -236,6 +281,77 @@ app.get('/admin/payments', (req, res) => {
         res.json(db.payments);
     } catch (error) {
         console.error('Erreur récupération paiements:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Route pour corriger les paiements sans vendeur
+app.post('/admin/fix-vendeurs', (req, res) => {
+    try {
+        const { password } = req.body;
+        
+        if (password !== 'TOMBOG11') {
+            return res.status(403).json({ error: 'Mot de passe incorrect' });
+        }
+        
+        const db = readDatabase();
+        let fixed = 0;
+        
+        // Ajouter "Non spécifié" aux paiements sans vendeur
+        db.payments.forEach(payment => {
+            if (!payment.vendeur) {
+                payment.vendeur = 'Non spécifié';
+                fixed++;
+            }
+            if (!payment.amount) {
+                payment.amount = 2; // 2€ par défaut
+            }
+        });
+        
+        if (writeDatabase(db)) {
+            res.json({ success: true, message: `${fixed} paiements corrigés` });
+        } else {
+            res.status(500).json({ error: 'Erreur lors de la sauvegarde' });
+        }
+    } catch (error) {
+        console.error('Erreur correction:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Route pour importer des paiements depuis un CSV
+app.post('/admin/import', (req, res) => {
+    try {
+        const { password, payments } = req.body;
+        
+        // Vérifier le mot de passe
+        if (password !== 'TOMBOG11') {
+            return res.status(403).json({ error: 'Mot de passe incorrect' });
+        }
+        
+        const db = readDatabase();
+        
+        // Remplacer tous les paiements
+        db.payments = payments;
+        
+        // Recalculer les statistiques des vendeurs
+        db.vendeurs = {};
+        payments.forEach(payment => {
+            const vendeur = payment.vendeur || 'Non spécifié';
+            if (!db.vendeurs[vendeur]) {
+                db.vendeurs[vendeur] = { tickets: 0, montant: 0 };
+            }
+            db.vendeurs[vendeur].tickets += 1;
+            db.vendeurs[vendeur].montant += payment.amount || 0;
+        });
+        
+        if (writeDatabase(db)) {
+            res.json({ success: true, message: `${payments.length} paiements importés` });
+        } else {
+            res.status(500).json({ error: 'Erreur lors de la sauvegarde' });
+        }
+    } catch (error) {
+        console.error('Erreur import:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -319,4 +435,5 @@ app.listen(PORT, () => {
     console.log(`📊 Interface admin: http://localhost:${PORT}/admin.html`);
     console.log(`💾 Base de données: ${DB_FILE}`);
     console.log(`🖼️  Contenu du site: ${CONTENT_FILE}`);
+    console.log(`📧 Service email: Resend`);
 });

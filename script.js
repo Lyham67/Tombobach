@@ -332,12 +332,14 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('🔄 Soumission du formulaire...');
             
             const formData = new FormData(paymentForm);
+            const vendeurValue = formData.get('vendeur');
+            
             const data = {
                 firstName: formData.get('firstName'),
                 lastName: formData.get('lastName'),
                 email: formData.get('email'),
                 phone: formData.get('phone'),
-                vendeur: formData.get('vendeur') || 'Autre',
+                vendeur: vendeurValue && vendeurValue.trim() !== '' ? vendeurValue.trim() : 'Non spécifié',
                 tickets: selectedTickets,
                 amount: selectedPrice
             };

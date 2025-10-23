@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 Mode Édition - Tombobach</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .edit-mode-banner {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .edit-mode-banner a {
+            color: white;
+            text-decoration: underline;
+            margin-left: 20px;
+        }
+    </style>
+    <script>
+        // Protection par mot de passe
+        (function() {
+            const password = sessionStorage.getItem('bachelocurieux_auth');
+            if (password !== 'TOMBOG11') {
+                const userPassword = prompt('🔒 Mot de passe requis pour accéder à cette page :');
+                if (userPassword !== 'TOMBOG11') {
+                    alert('❌ Mot de passe incorrect !');
+                    window.location.href = 'index.html';
+                } else {
+                    sessionStorage.setItem('bachelocurieux_auth', 'TOMBOG11');
+                }
+            }
+        })();
+    </script>
+</head>
+<body>
+    <!-- Bannière Mode Édition -->
+    <div class="edit-mode-banner">
+        🔓 MODE ÉDITION ACTIVÉ - Vous pouvez modifier les textes et images
+        <a href="index.html">→ Voir le site public</a>
+    </div>
+
+    <!-- Barre de navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="#" class="logo">Tombobach</a>
+            </div>
+            <div class="navbar-menu">
+                <a href="#prizes" class="nav-link">Lots</a>
+                <a href="#all-prizes" class="nav-link">Tous les lots</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header / Hero Section -->
+    <header class="hero" id="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="logo">Tombobach</h1>
+            <p class="slogan">La grande Tombola des Bachelor Arts et Métiers !</p>
+            <button onclick="document.getElementById('hero-upload').click()" style="position: absolute; bottom: 20px; right: 20px; background: rgba(255,255,255,0.9); border: 2px solid #667eea; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; color: #667eea; z-index: 10;">
+                📷 Changer l'image de fond
+            </button>
+            <input type="file" id="hero-upload" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;">
+        </div>
+    </header>
+
+    <!-- Section Lots à Gagner -->
+    <section id="prizes" class="prizes-section">
+        <div class="container">
+            <h2 class="section-title">Les lots à gagner !</h2>
+            <div class="prizes-grid">
+                <!-- Prize Card 1 -->
+                <div class="prize-card">
+                    <div class="prize-image-placeholder" onclick="document.getElementById('upload-1').click()">
+                        <img src="prize1.jpg" alt="Lot 1" class="prize-image" id="prize-img-1">
+                        <div class="upload-overlay">
+                            <span>📷</span>
+                            <p>Ajoutez votre image</p>
+                        </div>
+                        <input type="file" id="upload-1" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleImageUpload(event, 'prize-img-1')">
+                    </div>
+                    <div class="prize-content">
+                        <h3 class="prize-title" contenteditable="true">Lot Principal</h3>
+                        <p class="prize-description" contenteditable="true">Décrivez votre lot principal ici. Cliquez pour modifier le texte.</p>
+                    </div>
+                </div>
+
+                <!-- Prize Card 2 -->
+                <div class="prize-card">
+                    <div class="prize-image-placeholder" onclick="document.getElementById('upload-2').click()">
+                        <img src="prize2.jpg" alt="Lot 2" class="prize-image" id="prize-img-2">
+                        <div class="upload-overlay">
+                            <span>📷</span>
+                            <p>Ajoutez votre image</p>
+                        </div>
+                        <input type="file" id="upload-2" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleImageUpload(event, 'prize-img-2')">
+                    </div>
+                    <div class="prize-content">
+                        <h3 class="prize-title" contenteditable="true">2ème Lot</h3>
+                        <p class="prize-description" contenteditable="true">Décrivez votre deuxième lot ici. Cliquez pour modifier le texte.</p>
+                    </div>
+                </div>
+
+                <!-- Prize Card 3 -->
+                <div class="prize-card">
+                    <div class="prize-image-placeholder" onclick="document.getElementById('upload-3').click()">
+                        <img src="prize3.jpg" alt="Lot 3" class="prize-image" id="prize-img-3">
+                        <div class="upload-overlay">
+                            <span>📷</span>
+                            <p>Ajoutez votre image</p>
+                        </div>
+                        <input type="file" id="upload-3" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleImageUpload(event, 'prize-img-3')">
+                    </div>
+                    <div class="prize-content">
+                        <h3 class="prize-title" contenteditable="true">3ème Lot</h3>
+                        <p class="prize-description" contenteditable="true">Décrivez votre troisième lot ici. Cliquez pour modifier le texte.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Tous les Lots -->
+    <section id="all-prizes" class="all-prizes-section">
+        <div class="container">
+            <h2 class="section-title">Tous les lots à gagner</h2>
+            <p class="section-subtitle">Cliquez sur les images pour les modifier, et sur les textes pour les éditer</p>
+            
+            <div class="all-prizes-grid">
+                <!-- Lot 1 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder" onclick="document.getElementById('upload-small-1').click()">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="1">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                        <input type="file" id="upload-small-1" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleSmallImageUpload(event, 1)">
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 1</p>
+                </div>
+
+                <!-- Lot 2 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder" onclick="document.getElementById('upload-small-2').click()">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="2">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                        <input type="file" id="upload-small-2" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleSmallImageUpload(event, 2)">
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 2</p>
+                </div>
+
+                <!-- Lot 3 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder" onclick="document.getElementById('upload-small-3').click()">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="3">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                        <input type="file" id="upload-small-3" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleSmallImageUpload(event, 3)">
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 3</p>
+                </div>
+
+                <!-- Lot 4 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder" onclick="document.getElementById('upload-small-4').click()">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="4">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                        <input type="file" id="upload-small-4" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleSmallImageUpload(event, 4)">
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 4</p>
+                </div>
+
+                <!-- Lot 5 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder" onclick="document.getElementById('upload-small-5').click()">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="5">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                        <input type="file" id="upload-small-5" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleSmallImageUpload(event, 5)">
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 5</p>
+                </div>
+
+                <!-- Lot 6 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder" onclick="document.getElementById('upload-small-6').click()">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="6">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                        <input type="file" id="upload-small-6" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleSmallImageUpload(event, 6)">
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 6</p>
+                </div>
+
+                <!-- Lot 7 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder" onclick="document.getElementById('upload-small-7').click()">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="7">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                        <input type="file" id="upload-small-7" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleSmallImageUpload(event, 7)">
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 7</p>
+                </div>
+
+                <!-- Lot 8 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder" onclick="document.getElementById('upload-small-8').click()">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="8">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                        <input type="file" id="upload-small-8" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleSmallImageUpload(event, 8)">
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 8</p>
+                </div>
+
+                <!-- Lot 9 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder" onclick="document.getElementById('upload-small-9').click()">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="9">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                        <input type="file" id="upload-small-9" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleSmallImageUpload(event, 9)">
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 9</p>
+                </div>
+
+                <!-- Lot 10 -->
+                <div class="small-prize-card">
+                    <div class="small-prize-image-placeholder" onclick="document.getElementById('upload-small-10').click()">
+                        <img src="" alt="Lot" class="small-prize-image" data-lot="10">
+                        <div class="upload-overlay-small">
+                            <span>📷</span>
+                        </div>
+                        <input type="file" id="upload-small-10" accept="image/png,image/jpeg,image/jpg,image/webp" style="display: none;" onchange="handleSmallImageUpload(event, 10)">
+                    </div>
+                    <p class="small-prize-title" contenteditable="true">Lot 10</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>📧 Email: <a href="mailto:bachelor.linternational@gmail.com">bachelor.linternational@gmail.com</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Bachelor Bordeaux</h3>
+                    <p>Promotion 2024-2025</p>
+                    <p>Tombola organisée par les étudiants</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Informations</h3>
+                    <p>Tirage au sort équitable</p>
+                    <p>Paiement sécurisé par Stripe</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Tombola Bachelor Bordeaux - Tous droits réservés</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Fonction pour gérer l'upload de l'image hero
+        document.getElementById('hero-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const heroSection = document.getElementById('hero-section');
+                    heroSection.style.backgroundImage = `url(${e.target.result})`;
+                    heroSection.style.backgroundSize = 'cover';
+                    heroSection.style.backgroundPosition = 'center';
+                    
+                    // Sauvegarder dans localStorage
+                    localStorage.setItem('hero-background-image', e.target.result);
+                    console.log('✅ Image de fond hero sauvegardée');
+                    alert('✅ Image de fond mise à jour !');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Fonction pour gérer l'upload des petites images
+        function handleSmallImageUpload(event, lotNumber) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.querySelector(`.small-prize-image[data-lot="${lotNumber}"]`);
+                    if (img) {
+                        img.src = e.target.result;
+                        img.style.display = 'block';
+                        
+                        // Sauvegarder dans localStorage
+                        localStorage.setItem(`small-prize-image-${lotNumber}`, e.target.result);
+                        console.log(`✅ Image du lot ${lotNumber} sauvegardée`);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Charger les images sauvegardées au chargement de la page
+        window.addEventListener('DOMContentLoaded', function() {
+            // Charger l'image hero
+            const savedHeroImage = localStorage.getItem('hero-background-image');
+            if (savedHeroImage) {
+                const heroSection = document.getElementById('hero-section');
+                heroSection.style.backgroundImage = `url(${savedHeroImage})`;
+                heroSection.style.backgroundSize = 'cover';
+                heroSection.style.backgroundPosition = 'center';
+            }
+            
+            // Charger les petites images
+            for (let i = 1; i <= 10; i++) {
+                const savedImage = localStorage.getItem(`small-prize-image-${i}`);
+                if (savedImage) {
+                    const img = document.querySelector(`.small-prize-image[data-lot="${i}"]`);
+                    if (img) {
+                        img.src = savedImage;
+                        img.style.display = 'block';
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

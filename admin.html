@@ -186,6 +186,40 @@
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
+        .import-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .import-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .fix-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .fix-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -308,6 +342,9 @@
                 <div>
                     <button class="refresh-btn" onclick="loadPayments()">🔄 Actualiser</button>
                     <button class="export-btn" onclick="exportToCSV()">📥 Exporter CSV</button>
+                    <button class="import-btn" onclick="document.getElementById('csv-upload').click()">📤 Importer CSV</button>
+                    <button class="fix-btn" onclick="fixVendeurs()">🔧 Corriger vendeurs</button>
+                    <input type="file" id="csv-upload" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
                 </div>
             </div>
 
@@ -449,6 +486,7 @@
                             <th>Nom</th>
                             <th>Email</th>
                             <th>Téléphone</th>
+                            <th>Vendeur</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -466,6 +504,7 @@
                         <td>${payment.lastName || '-'}</td>
                         <td>${payment.email || '-'}</td>
                         <td>${payment.phone || '-'}</td>
+                        <td><span style="background: #667eea; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;">${payment.vendeur || 'Non spécifié'}</span></td>
                     </tr>
                 `;
             });
@@ -481,7 +520,7 @@
         // Exporter en CSV
         async function exportToCSV() {
             try {
-                const response = await fetch('/admin/payments');
+                const response = await fetch(`${API_URL}/admin/payments`);
                 if (!response.ok) throw new Error('Erreur lors du chargement des données');
                 const tickets = await response.json();
                 
@@ -490,14 +529,15 @@
                     return;
                 }
 
-                // Trier les tickets par ID croissant
-                const sortedTickets = [...tickets].sort((a, b) => a.id - b.id);
+                // Trier les tickets par numéro croissant
+                const sortedTickets = [...tickets].sort((a, b) => a.ticket - b.ticket);
                 
-                let csv = 'Numéro de ticket,Prénom,Nom,Email,Téléphone,Montant,Date\n';
+                let csv = 'Numéro de ticket,Prénom,Nom,Email,Téléphone,Vendeur,Montant,Date\n';
                 
                 sortedTickets.forEach((ticket) => {
-                    const amount = 5; // 5€ par ticket
-                    csv += `"${ticket.id}","${ticket.firstName || ''}","${ticket.lastName || ''}","${ticket.email || ''}","${ticket.phone || ''}","${amount}€","${new Date().toISOString()}"\n`;
+                    const amount = ticket.amount || 2; // Montant par ticket
+                    const date = ticket.date ? new Date(ticket.date).toLocaleDateString('fr-FR') : '-';
+                    csv += `"${ticket.ticket}","${ticket.firstName || ''}","${ticket.lastName || ''}","${ticket.email || ''}","${ticket.phone || ''}","${ticket.vendeur || ''}","${amount}€","${date}"\n`;
                 });
 
             // Créer un blob et télécharger
@@ -513,6 +553,99 @@
             } catch (error) {
                 console.error('Erreur lors de l\'export CSV:', error);
                 alert(`Erreur lors de l'exportation: ${error.message}`);
+            }
+        }
+
+        // Importer depuis un CSV
+        async function importFromCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const password = prompt('🔒 Mot de passe pour importer les données :');
+            if (password !== 'TOMBOG11') {
+                alert('❌ Mot de passe incorrect !');
+                return;
+            }
+
+            try {
+                const text = await file.text();
+                const lines = text.split('\n').filter(line => line.trim());
+                
+                // Ignorer la première ligne (en-têtes)
+                const dataLines = lines.slice(1);
+                
+                const payments = [];
+                dataLines.forEach(line => {
+                    const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                    if (values && values.length >= 7) {
+                        const ticket = values[0].replace(/"/g, '');
+                        const firstName = values[1].replace(/"/g, '');
+                        const lastName = values[2].replace(/"/g, '');
+                        const email = values[3].replace(/"/g, '');
+                        const phone = values[4].replace(/"/g, '');
+                        const vendeur = values[5].replace(/"/g, '');
+                        const amount = parseFloat(values[6].replace(/[€"]/g, ''));
+                        
+                        payments.push({
+                            ticket: parseInt(ticket),
+                            firstName,
+                            lastName,
+                            email,
+                            phone,
+                            vendeur,
+                            amount,
+                            date: new Date().toISOString()
+                        });
+                    }
+                });
+
+                // Envoyer au serveur
+                const response = await fetch(`${API_URL}/admin/import`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password, payments })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(`✅ ${payments.length} paiements importés avec succès !`);
+                    loadPayments();
+                    loadStats();
+                } else {
+                    alert('❌ ' + (result.error || 'Erreur lors de l\'importation'));
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'import CSV:', error);
+                alert(`Erreur lors de l'importation: ${error.message}`);
+            }
+        }
+
+        // Corriger les vendeurs manquants
+        async function fixVendeurs() {
+            const password = prompt('🔒 Mot de passe pour corriger les données :');
+            if (password !== 'TOMBOG11') {
+                alert('❌ Mot de passe incorrect !');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/admin/fix-vendeurs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(`✅ ${result.message}`);
+                    loadPayments();
+                    loadStats();
+                } else {
+                    alert('❌ ' + (result.error || 'Erreur lors de la correction'));
+                }
+            } catch (error) {
+                console.error('Erreur lors de la correction:', error);
+                alert(`Erreur: ${error.message}`);
             }
         }
 

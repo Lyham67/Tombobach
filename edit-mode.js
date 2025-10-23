@@ -35,6 +35,7 @@ function applyContentToPage() {
         }
     }
     
+<<<<<<< HEAD
     // Images et textes des 3 gros lots
     if (siteContent.bigPrizes) {
         Object.keys(siteContent.bigPrizes).forEach(prizeNum => {
@@ -84,6 +85,15 @@ function applyContentToPage() {
             // Texte
             if (prize.title && title) {
                 title.textContent = prize.title;
+=======
+    // Images des petits lots
+    if (siteContent.smallPrizes) {
+        Object.keys(siteContent.smallPrizes).forEach(lotNumber => {
+            const img = document.querySelector(`.small-prize-image[data-lot="${lotNumber}"]`);
+            if (img && siteContent.smallPrizes[lotNumber]) {
+                img.src = siteContent.smallPrizes[lotNumber];
+                img.style.display = 'block';
+>>>>>>> 56ce46a32dc23b02baaecb418089dc62a47b44e5
             }
         });
     }
@@ -254,6 +264,7 @@ function addSmallPrizeImageEditors() {
     });
 }
 
+<<<<<<< HEAD
 // Ajouter les éditeurs pour les 3 gros lots
 function addBigPrizeEditors() {
     const prizeCards = document.querySelectorAll('.prize-card');
@@ -378,6 +389,8 @@ function addTextEditors() {
     });
 }
 
+=======
+>>>>>>> 56ce46a32dc23b02baaecb418089dc62a47b44e5
 // Charger le contenu au démarrage
 window.addEventListener('DOMContentLoaded', function() {
     loadContentFromServer();
