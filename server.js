@@ -31,52 +31,90 @@ const transporter = nodemailer.createTransport({
 });
 
 // Fonction pour envoyer un email de confirmation
-async function sendConfirmationEmail(customerEmail, customerName, tickets, ticketNumbers) {
+async function sendConfirmationEmail(customerEmail, customerName, tickets, ticketNumbers, customerPhone) {
+    const ticketNumbersStr = ticketNumbers.join(', ');
+    
     const mailOptions = {
         from: `"Tombola Bachelor Bordeaux" <${process.env.EMAIL_USER}>`,
         to: customerEmail,
         subject: '🎉 Confirmation de votre achat - Tombola Bachelor',
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                    <h1 style="color: white; margin: 0;">🎟️ Tombola Bachelor Bordeaux</h1>
-                </div>
-                
-                <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px;">
-                    <h2 style="color: #1e293b;">Merci pour votre participation !</h2>
-                    
-                    <p style="color: #475569; font-size: 16px;">Bonjour ${customerName},</p>
-                    
-                    <p style="color: #475569; font-size: 16px;">
-                        Votre achat a bien été confirmé ! Vous avez acheté <strong>${tickets} ticket(s)</strong> pour notre tombola.
-                    </p>
-                    
-                    <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h3 style="color: #1e293b; margin-top: 0;">Vos numéros de tickets :</h3>
-                        <p style="color: #667eea; font-size: 24px; font-weight: bold; margin: 10px 0;">
-                            ${ticketNumbers.join(', ')}
-                        </p>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+                    .ticket { position: relative; width: 100%; max-width: 600px; margin: 20px auto; }
+                    .ticket img { width: 100%; height: auto; display: block; }
+                    .ticket-number { position: absolute; top: 50px; right: 80px; font-size: 32px; font-weight: bold; color: #5a3e2b; }
+                    .customer-info { position: absolute; top: 95px; right: 80px; font-size: 14px; color: #000; line-height: 1.8; text-align: left; }
+                </style>
+            </head>
+            <body>
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
+                    <!-- En-tête -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+                        <h1 style="color: white; margin: 0;">🎟️ Tombola Bachelor Bordeaux</h1>
                     </div>
                     
-                    <p style="color: #475569; font-size: 16px;">
-                        Conservez bien cet email ! Il contient vos numéros de tickets pour le tirage au sort.
-                    </p>
-                    
-                    <p style="color: #475569; font-size: 16px;">
-                        Bonne chance ! 🍀
-                    </p>
-                    
-                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
-                    
-                    <p style="color: #94a3b8; font-size: 14px;">
-                        Pour toute question, contactez-nous à <a href="mailto:bachelor.linternational@gmail.com" style="color: #667eea;">bachelor.linternational@gmail.com</a>
-                    </p>
-                    
-                    <p style="color: #94a3b8; font-size: 14px;">
-                        © 2025 Tombola Bachelor Bordeaux - Promotion 2024-2025
-                    </p>
+                    <!-- Corps -->
+                    <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px;">
+                        <h2 style="color: #1e293b;">Merci pour votre participation !</h2>
+                        <p style="color: #475569; font-size: 16px;">Bonjour ${customerName},</p>
+                        <p style="color: #475569; font-size: 16px;">
+                            Votre achat a bien été confirmé ! Vous avez acheté <strong>${tickets} ticket(s)</strong> pour notre tombola.
+                        </p>
+                        
+                        <!-- Ticket 1 (recto) -->
+                        <div class="ticket">
+                            <img src="https://raw.githubusercontent.com/Lyham67/Tombobach/main/email-images/ticket-recto.png" alt="Ticket recto" style="width: 100%; height: auto;">
+                            <div class="ticket-number">${ticketNumbersStr}</div>
+                            <div class="customer-info">
+                                <div><strong>NAME:</strong> ${customerName}</div>
+                                <div><strong>PHONE:</strong> ${customerPhone}</div>
+                                <div><strong>EMAIL:</strong> ${customerEmail}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Ticket 2 (verso) -->
+                        <div class="ticket" style="margin-top: 30px;">
+                            <img src="https://raw.githubusercontent.com/Lyham67/Tombobach/main/email-images/ticket-verso.png" alt="Ticket verso" style="width: 100%; height: auto;">
+                            <div class="ticket-number">${ticketNumbersStr}</div>
+                        </div>
+                        
+                        <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                            <h3 style="color: #1e293b; margin-top: 0;">📋 Récapitulatif</h3>
+                            <p style="margin: 5px 0;"><strong>Nom:</strong> ${customerName}</p>
+                            <p style="margin: 5px 0;"><strong>Email:</strong> ${customerEmail}</p>
+                            <p style="margin: 5px 0;"><strong>Téléphone:</strong> ${customerPhone}</p>
+                            <p style="margin: 5px 0;"><strong>Numéros de tickets:</strong> <span style="color: #667eea; font-weight: bold;">${ticketNumbersStr}</span></p>
+                        </div>
+                        
+                        <p style="color: #475569; font-size: 16px;">
+                            <strong>Date de tirage : 13/12/25</strong><br>
+                            Université Arts et Métier
+                        </p>
+                        
+                        <p style="color: #475569; font-size: 16px;">
+                            Conservez bien cet email ! Il contient vos numéros de tickets pour le tirage au sort.
+                        </p>
+                        
+                        <p style="color: #475569; font-size: 16px;">Bonne chance ! 🍀</p>
+                        
+                        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+                        
+                        <p style="color: #94a3b8; font-size: 14px;">
+                            Pour toute question, contactez-nous à <a href="mailto:bachelor.linternational@gmail.com" style="color: #667eea;">bachelor.linternational@gmail.com</a>
+                        </p>
+                        
+                        <p style="color: #94a3b8; font-size: 14px;">
+                            © 2025 Tombola Bachelor Bordeaux - Promotion 2024-2025
+                        </p>
+                    </div>
                 </div>
-            </div>
+            </body>
+            </html>
         `
     };
 
@@ -215,7 +253,7 @@ app.post('/save-payment', async (req, res) => {
         // Sauvegarder
         if (writeDatabase(db)) {
             // Envoyer l'email de confirmation
-            sendConfirmationEmail(email, `${firstName} ${lastName}`, tickets, ticketNumbers)
+            sendConfirmationEmail(email, `${firstName} ${lastName}`, tickets, ticketNumbers, phone)
                 .then(() => console.log('📧 Email de confirmation envoyé'))
                 .catch(err => console.error('❌ Erreur email:', err));
             
