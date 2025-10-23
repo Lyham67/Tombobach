@@ -5,7 +5,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 require('dotenv').config();
 
 const app = express();
@@ -19,19 +19,8 @@ app.use(express.static('.'));
 // Initialiser Stripe avec la clé secrète
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// Configuration de Nodemailer
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 465,
-    secure: true, // true pour le port 465, false pour le port 587
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-});
+// Initialiser Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Fonction pour envoyer un email de confirmation
 async function sendConfirmationEmail(customerEmail, customerName, tickets, ticketNumbers, customerPhone) {
@@ -42,11 +31,7 @@ async function sendConfirmationEmail(customerEmail, customerName, tickets, ticke
     
     const ticketNumbersStr = ticketNumbers.join(', ');
     
-    const mailOptions = {
-        from: `"Tombola Bachelor Bordeaux" <${process.env.EMAIL_USER}>`,
-        to: customerEmail,
-        subject: '🎉 Confirmation de votre achat - Tombola Bachelor',
-        html: `
+    const htmlContent = `
             <!DOCTYPE html>
             <html>
             <head>
@@ -123,11 +108,21 @@ async function sendConfirmationEmail(customerEmail, customerName, tickets, ticke
                 </div>
             </body>
             </html>
-        `
-    };
+        `;
 
     try {
-        await transporter.sendMail(mailOptions);
+        const { data, error } = await resend.emails.send({
+            from: 'Tombola Bachelor <onboarding@resend.dev>',
+            to: [customerEmail],
+            subject: '🎉 Confirmation de votre achat - Tombola Bachelor',
+            html: htmlContent
+        });
+
+        if (error) {
+            console.error('❌ Erreur envoi email:', error);
+            return false;
+        }
+
         console.log('✅ Email envoyé à:', customerEmail);
         return true;
     } catch (error) {
@@ -211,6 +206,8 @@ app.post('/create-checkout-session', async (req, res) => {
 app.post('/save-payment', async (req, res) => {
     try {
         const { firstName, lastName, email, phone, tickets, amount, paymentIntentId, vendeur } = req.body;
+        
+        console.log('💾 Sauvegarde paiement - Vendeur reçu:', vendeur);
 
         // Lire la base de données
         const db = readDatabase();
@@ -243,6 +240,8 @@ app.post('/save-payment', async (req, res) => {
                 lastName,
                 email,
                 phone,
+                vendeur: vendeur || 'Non spécifié',
+                amount: amount / tickets,
                 date: new Date().toISOString()
             };
             db.payments.push(ticketEntry);
@@ -430,25 +429,11 @@ app.post('/api/content', (req, res) => {
     }
 });
 
-// Tester la connexion email au démarrage
-async function testEmailConnection() {
-    try {
-        await transporter.verify();
-        console.log('✅ Connexion email OK');
-        console.log(`📧 Email configuré: ${process.env.EMAIL_USER}`);
-    } catch (error) {
-        console.error('❌ Erreur connexion email:', error.message);
-        console.error('⚠️  Vérifiez vos variables d\'environnement EMAIL_USER et EMAIL_PASS');
-    }
-}
-
 // Démarrer le serveur
 app.listen(PORT, () => {
     console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
     console.log(`📊 Interface admin: http://localhost:${PORT}/admin.html`);
     console.log(`💾 Base de données: ${DB_FILE}`);
     console.log(`🖼️  Contenu du site: ${CONTENT_FILE}`);
-    
-    // Tester la connexion email
-    testEmailConnection();
+    console.log(`📧 Service email: Resend`);
 });
