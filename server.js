@@ -278,6 +278,43 @@ app.get('/admin/payments', (req, res) => {
     }
 });
 
+// Route pour importer des paiements depuis un CSV
+app.post('/admin/import', (req, res) => {
+    try {
+        const { password, payments } = req.body;
+        
+        // Vérifier le mot de passe
+        if (password !== 'TOMBOG11') {
+            return res.status(403).json({ error: 'Mot de passe incorrect' });
+        }
+        
+        const db = readDatabase();
+        
+        // Remplacer tous les paiements
+        db.payments = payments;
+        
+        // Recalculer les statistiques des vendeurs
+        db.vendeurs = {};
+        payments.forEach(payment => {
+            const vendeur = payment.vendeur || 'Non spécifié';
+            if (!db.vendeurs[vendeur]) {
+                db.vendeurs[vendeur] = { tickets: 0, montant: 0 };
+            }
+            db.vendeurs[vendeur].tickets += 1;
+            db.vendeurs[vendeur].montant += payment.amount || 0;
+        });
+        
+        if (writeDatabase(db)) {
+            res.json({ success: true, message: `${payments.length} paiements importés` });
+        } else {
+            res.status(500).json({ error: 'Erreur lors de la sauvegarde' });
+        }
+    } catch (error) {
+        console.error('Erreur import:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Route pour obtenir les statistiques
 app.get('/admin/stats', (req, res) => {
     try {
