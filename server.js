@@ -142,8 +142,8 @@ app.post('/create-checkout-session', async (req, res) => {
                 },
             ],
             mode: 'payment',
-            success_url: `${req.headers.origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${req.headers.origin}/?canceled=true`,
+            success_url: `https://lyham67.github.io/Tombobach/success.html?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `https://lyham67.github.io/Tombobach/?canceled=true`,
             customer_email: customerInfo.email,
             metadata: {
                 tickets: tickets.toString(),
