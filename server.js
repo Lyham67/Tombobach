@@ -22,11 +22,14 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 // Configuration de Nodemailer
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 587,
-    secure: false,
+    port: process.env.EMAIL_PORT || 465,
+    secure: true, // true pour le port 465, false pour le port 587
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
