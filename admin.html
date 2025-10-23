@@ -449,6 +449,7 @@
                             <th>Nom</th>
                             <th>Email</th>
                             <th>Téléphone</th>
+                            <th>Vendeur</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -466,6 +467,7 @@
                         <td>${payment.lastName || '-'}</td>
                         <td>${payment.email || '-'}</td>
                         <td>${payment.phone || '-'}</td>
+                        <td><span style="background: #667eea; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;">${payment.vendeur || 'Non spécifié'}</span></td>
                     </tr>
                 `;
             });
