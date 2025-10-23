@@ -483,7 +483,7 @@
         // Exporter en CSV
         async function exportToCSV() {
             try {
-                const response = await fetch('/admin/payments');
+                const response = await fetch(`${API_URL}/admin/payments`);
                 if (!response.ok) throw new Error('Erreur lors du chargement des données');
                 const tickets = await response.json();
                 
@@ -492,14 +492,15 @@
                     return;
                 }
 
-                // Trier les tickets par ID croissant
-                const sortedTickets = [...tickets].sort((a, b) => a.id - b.id);
+                // Trier les tickets par numéro croissant
+                const sortedTickets = [...tickets].sort((a, b) => a.ticket - b.ticket);
                 
-                let csv = 'Numéro de ticket,Prénom,Nom,Email,Téléphone,Montant,Date\n';
+                let csv = 'Numéro de ticket,Prénom,Nom,Email,Téléphone,Vendeur,Montant,Date\n';
                 
                 sortedTickets.forEach((ticket) => {
-                    const amount = 5; // 5€ par ticket
-                    csv += `"${ticket.id}","${ticket.firstName || ''}","${ticket.lastName || ''}","${ticket.email || ''}","${ticket.phone || ''}","${amount}€","${new Date().toISOString()}"\n`;
+                    const amount = ticket.amount || 2; // Montant par ticket
+                    const date = ticket.date ? new Date(ticket.date).toLocaleDateString('fr-FR') : '-';
+                    csv += `"${ticket.ticket}","${ticket.firstName || ''}","${ticket.lastName || ''}","${ticket.email || ''}","${ticket.phone || ''}","${ticket.vendeur || ''}","${amount}€","${date}"\n`;
                 });
 
             // Créer un blob et télécharger
