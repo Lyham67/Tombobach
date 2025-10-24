@@ -5,7 +5,8 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
+const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
 const app = express();
@@ -20,7 +21,22 @@ app.use(express.static('.'));
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Initialiser Resend
+const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Connexion MongoDB
+let db;
+const mongoClient = new MongoClient(process.env.MONGODB_URI || 'mongodb://localhost:27017');
+
+async function connectDB() {
+    try {
+        await mongoClient.connect();
+        db = mongoClient.db('tombobach');
+        console.log('✅ MongoDB connecté');
+    } catch (error) {
+        console.error('❌ Erreur MongoDB:', error);
+    }
+}
 
 // Fonction pour envoyer un email de confirmation
 async function sendConfirmationEmail(customerEmail, customerName, tickets, ticketNumbers, customerPhone) {
@@ -119,29 +135,41 @@ async function sendConfirmationEmail(customerEmail, customerName, tickets, ticke
     }
 }
 
-// Chemin vers le fichier de base de données
-const DB_FILE = path.join(__dirname, 'payments_database.json');
-
-// Initialiser la base de données si elle n'existe pas
-if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify({ payments: [] }, null, 2));
-}
-
-// Fonction pour lire la base de données
-function readDatabase() {
+// Fonctions MongoDB pour remplacer le fichier JSON
+async function readDatabase() {
     try {
-        const data = fs.readFileSync(DB_FILE, 'utf8');
-        return JSON.parse(data);
+        if (!db) return { payments: [], vendeurs: {} };
+        
+        const payments = await db.collection('payments').find().toArray();
+        const vendeurs = await db.collection('vendeurs').findOne({ _id: 'stats' }) || { vendeurs: {} };
+        
+        return {
+            payments,
+            vendeurs: vendeurs.vendeurs || {}
+        };
     } catch (error) {
         console.error('Erreur lecture DB:', error);
-        return { payments: [] };
+        return { payments: [], vendeurs: {} };
     }
 }
 
-// Fonction pour écrire dans la base de données
-function writeDatabase(data) {
+async function writeDatabase(data) {
     try {
-        fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+        if (!db) return false;
+        
+        // Sauvegarder les paiements
+        await db.collection('payments').deleteMany({});
+        if (data.payments && data.payments.length > 0) {
+            await db.collection('payments').insertMany(data.payments);
+        }
+        
+        // Sauvegarder les stats vendeurs
+        await db.collection('vendeurs').updateOne(
+            { _id: 'stats' },
+            { $set: { vendeurs: data.vendeurs || {} } },
+            { upsert: true }
+        );
+        
         return true;
     } catch (error) {
         console.error('Erreur écriture DB:', error);
@@ -418,10 +446,11 @@ app.post('/api/content', (req, res) => {
 });
 
 // Démarrer le serveur
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
     console.log(`📊 Interface admin: http://localhost:${PORT}/admin.html`);
-    console.log(`💾 Base de données: ${DB_FILE}`);
-    console.log(`🖼️  Contenu du site: ${CONTENT_FILE}`);
     console.log(`📧 Service email: Resend`);
+    
+    // Connecter à MongoDB
+    await connectDB();
 });
