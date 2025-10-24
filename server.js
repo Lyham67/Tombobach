@@ -121,7 +121,7 @@ async function sendConfirmationEmail(customerEmail, customerName, tickets, ticke
 
     try {
         const { data, error } = await resend.emails.send({
-            from: 'Tombola Bachelor <onboarding@resend.dev>',
+            from: 'Tombola Bachelor <noreply@tombobach.com>',
             to: [customerEmail],
             subject: '🎉 Confirmation de votre achat - Tombola Bachelor',
             html: htmlContent
