@@ -26,7 +26,11 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Connexion MongoDB
 let db;
-const mongoClient = new MongoClient(process.env.MONGODB_URI || 'mongodb://localhost:27017');
+const mongoClient = new MongoClient(process.env.MONGODB_URI || 'mongodb://localhost:27017', {
+    tls: true,
+    tlsAllowInvalidCertificates: true,
+    serverSelectionTimeoutMS: 5000
+});
 
 async function connectDB() {
     try {
@@ -35,6 +39,7 @@ async function connectDB() {
         console.log('✅ MongoDB connecté');
     } catch (error) {
         console.error('❌ Erreur MongoDB:', error);
+        console.error('Détails:', error.message);
     }
 }
 
