@@ -231,13 +231,13 @@ app.post('/save-payment', async (req, res) => {
         console.log('💾 Sauvegarde paiement - Vendeur reçu:', vendeur);
 
         // Lire la base de données
-        const db = readDatabase();
+        const dbData = await readDatabase();
 
         // Générer des numéros de tickets uniques
         const ticketNumbers = [];
         // Calculer le dernier numéro de ticket utilisé
         let lastTicketNumber = 0;
-        db.payments.forEach(payment => {
+        dbData.payments.forEach(payment => {
             if (payment.ticket && payment.ticket > lastTicketNumber) {
                 lastTicketNumber = payment.ticket;
             }
@@ -265,21 +265,21 @@ app.post('/save-payment', async (req, res) => {
                 amount: amount / tickets,
                 date: new Date().toISOString()
             };
-            db.payments.push(ticketEntry);
+            dbData.payments.push(ticketEntry);
         });
         
         // Mettre à jour les statistiques des vendeurs
-        if (!db.vendeurs) {
-            db.vendeurs = {};
+        if (!dbData.vendeurs) {
+            dbData.vendeurs = {};
         }
-        if (!db.vendeurs[vendeur]) {
-            db.vendeurs[vendeur] = { tickets: 0, montant: 0 };
+        if (!dbData.vendeurs[vendeur]) {
+            dbData.vendeurs[vendeur] = { tickets: 0, montant: 0 };
         }
-        db.vendeurs[vendeur].tickets += tickets;
-        db.vendeurs[vendeur].montant += amount;
+        dbData.vendeurs[vendeur].tickets += tickets;
+        dbData.vendeurs[vendeur].montant += amount;
 
         // Sauvegarder
-        if (writeDatabase(db)) {
+        if (await writeDatabase(dbData)) {
             // Envoyer l'email de confirmation
             sendConfirmationEmail(email, `${firstName} ${lastName}`, tickets, ticketNumbers, phone)
                 .then(() => console.log('📧 Email de confirmation envoyé'))
@@ -296,10 +296,10 @@ app.post('/save-payment', async (req, res) => {
 });
 
 // Route pour obtenir tous les paiements (interface admin)
-app.get('/admin/payments', (req, res) => {
+app.get('/admin/payments', async (req, res) => {
     try {
-        const db = readDatabase();
-        res.json(db.payments);
+        const dbData = await readDatabase();
+        res.json(dbData.payments);
     } catch (error) {
         console.error('Erreur récupération paiements:', error);
         res.status(500).json({ error: error.message });
@@ -307,7 +307,7 @@ app.get('/admin/payments', (req, res) => {
 });
 
 // Route pour corriger les paiements sans vendeur
-app.post('/admin/fix-vendeurs', (req, res) => {
+app.post('/admin/fix-vendeurs', async (req, res) => {
     try {
         const { password } = req.body;
         
@@ -315,11 +315,11 @@ app.post('/admin/fix-vendeurs', (req, res) => {
             return res.status(403).json({ error: 'Mot de passe incorrect' });
         }
         
-        const db = readDatabase();
+        const dbData = await readDatabase();
         let fixed = 0;
         
         // Ajouter "Non spécifié" aux paiements sans vendeur
-        db.payments.forEach(payment => {
+        dbData.payments.forEach(payment => {
             if (!payment.vendeur) {
                 payment.vendeur = 'Non spécifié';
                 fixed++;
@@ -329,7 +329,7 @@ app.post('/admin/fix-vendeurs', (req, res) => {
             }
         });
         
-        if (writeDatabase(db)) {
+        if (await writeDatabase(dbData)) {
             res.json({ success: true, message: `${fixed} paiements corrigés` });
         } else {
             res.status(500).json({ error: 'Erreur lors de la sauvegarde' });
@@ -341,7 +341,7 @@ app.post('/admin/fix-vendeurs', (req, res) => {
 });
 
 // Route pour importer des paiements depuis un CSV
-app.post('/admin/import', (req, res) => {
+app.post('/admin/import', async (req, res) => {
     try {
         const { password, payments } = req.body;
         
@@ -350,23 +350,23 @@ app.post('/admin/import', (req, res) => {
             return res.status(403).json({ error: 'Mot de passe incorrect' });
         }
         
-        const db = readDatabase();
+        const dbData = await readDatabase();
         
         // Remplacer tous les paiements
-        db.payments = payments;
+        dbData.payments = payments;
         
         // Recalculer les statistiques des vendeurs
-        db.vendeurs = {};
+        dbData.vendeurs = {};
         payments.forEach(payment => {
             const vendeur = payment.vendeur || 'Non spécifié';
-            if (!db.vendeurs[vendeur]) {
-                db.vendeurs[vendeur] = { tickets: 0, montant: 0 };
+            if (!dbData.vendeurs[vendeur]) {
+                dbData.vendeurs[vendeur] = { tickets: 0, montant: 0 };
             }
-            db.vendeurs[vendeur].tickets += 1;
-            db.vendeurs[vendeur].montant += payment.amount || 0;
+            dbData.vendeurs[vendeur].tickets += 1;
+            dbData.vendeurs[vendeur].montant += payment.amount || 0;
         });
         
-        if (writeDatabase(db)) {
+        if (await writeDatabase(dbData)) {
             res.json({ success: true, message: `${payments.length} paiements importés` });
         } else {
             res.status(500).json({ error: 'Erreur lors de la sauvegarde' });
@@ -378,13 +378,13 @@ app.post('/admin/import', (req, res) => {
 });
 
 // Route pour obtenir les statistiques
-app.get('/admin/stats', (req, res) => {
+app.get('/admin/stats', async (req, res) => {
     try {
-        const db = readDatabase();
+        const dbData = await readDatabase();
         const stats = {
-            totalTickets: db.payments.length,
-            totalRevenue: (db.vendeurs ? Object.values(db.vendeurs).reduce((sum, v) => sum + v.montant, 0) : 0),
-            vendeurs: db.vendeurs || {}
+            totalTickets: dbData.payments.length,
+            totalRevenue: (dbData.vendeurs ? Object.values(dbData.vendeurs).reduce((sum, v) => sum + v.montant, 0) : 0),
+            vendeurs: dbData.vendeurs || {}
         };
         res.json(stats);
     } catch (error) {
