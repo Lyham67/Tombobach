@@ -1705,3 +1705,86 @@ input:invalid, select:invalid {
         max-width: 100%;
     }
 }
+
+/* Section Pourquoi on fait ça ? */
+.why-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    scroll-margin-top: 80px;
+}
+
+.why-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    align-items: center;
+    margin-top: 40px;
+}
+
+.why-image {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.bachelor-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.bachelor-image:hover {
+    transform: scale(1.05);
+}
+
+.why-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #475569;
+}
+
+.why-text p {
+    margin-bottom: 20px;
+}
+
+.why-link {
+    color: #667eea;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.why-link:hover {
+    color: #764ba2;
+    border-bottom: 2px solid #764ba2;
+}
+
+/* Responsive pour la section Why */
+@media (max-width: 768px) {
+    .why-section {
+        padding: 60px 0;
+    }
+    
+    .why-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .why-text {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .why-section {
+        padding: 40px 0;
+    }
+    
+    .why-text {
+        font-size: 0.95rem;
+    }
+}
