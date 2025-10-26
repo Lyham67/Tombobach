@@ -227,6 +227,34 @@ function calculateCustomPrice(tickets) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Initialisation...');
     
+    // Menu burger mobile
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const navbarMenu = document.getElementById('navbarMenu');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    if (mobileMenuToggle && navbarMenu) {
+        mobileMenuToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            navbarMenu.classList.toggle('active');
+        });
+        
+        // Fermer le menu quand on clique sur un lien
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenuToggle.classList.remove('active');
+                navbarMenu.classList.remove('active');
+            });
+        });
+        
+        // Fermer le menu si on clique en dehors
+        document.addEventListener('click', function(event) {
+            if (!navbarMenu.contains(event.target) && !mobileMenuToggle.contains(event.target)) {
+                mobileMenuToggle.classList.remove('active');
+                navbarMenu.classList.remove('active');
+            }
+        });
+    }
+    
     // Charger les images sauvegardées
     loadSavedImages();
     
