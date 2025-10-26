@@ -94,8 +94,8 @@ async function sendConfirmationEmail(customerEmail, customerName, tickets, ticke
                         </div>
                         
                         <p style="color: #475569; font-size: 16px;">
-                            <strong>Date de tirage : 18/10/2025</strong><br>
-                            Université Arts et Métiers
+                            <strong>🎯 Tirage au sort le 18/12/2025 sur Instagram : @bdx_bam</strong><br>
+                            Université Arts et Métiers - Promotion 2024-2025
                         </p>
                         
                         <p style="color: #475569; font-size: 16px;">
@@ -107,7 +107,7 @@ async function sendConfirmationEmail(customerEmail, customerName, tickets, ticke
                         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
                         
                         <p style="color: #94a3b8; font-size: 14px;">
-                            Pour toute question, contactez-nous à <a href="mailto:bachelor.linternational@gmail.com" style="color: #667eea;">bachelor.linternational@gmail.com</a>
+                            Pour toute question, contactez-nous à <a href="mailto:tombobach.1812@gmail.com" style="color: #667eea;">tombobach.1812@gmail.com</a>
                         </p>
                         
                         <p style="color: #94a3b8; font-size: 14px;">
