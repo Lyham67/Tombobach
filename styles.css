@@ -62,6 +62,38 @@
     width: 100%;
 }
 
+/* Menu burger mobile */
+.mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    z-index: 1001;
+}
+
+.mobile-menu-toggle span {
+    width: 25px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(7px, 7px);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
 /* Ajustement du padding pour le contenu principal */
 .hero {
     padding-top: 80px; /* Hauteur de la navbar */
@@ -1473,21 +1505,174 @@ input:invalid, select:invalid {
     font-size: 0.9rem;
 }
 
-@media (max-width: 480px) {
-    .logo {
-        font-size: 2.5rem;
+/* Mobile Portrait - Responsive complet */
+@media (max-width: 768px) {
+    /* Hero Section */
+    .hero {
+        height: auto;
+        min-height: 100vh;
+        padding: 100px 20px 60px;
     }
     
+    .logo {
+        font-size: 3rem;
+    }
+    
+    .slogan {
+        font-size: 1.2rem;
+        margin: 1rem 0 0.5rem;
+    }
+    
+    .draw-date {
+        font-size: 1rem;
+        margin: 0.5rem 0;
+    }
+    
+    .instagram {
+        font-size: 0.95rem;
+        margin: 0.5rem 0 1.5rem;
+    }
+    
+    .cta-button {
+        padding: 12px 30px;
+        font-size: 1rem;
+    }
+    
+    /* Navigation */
+    .navbar-menu {
+        gap: 15px;
+    }
+    
+    .nav-link {
+        font-size: 0.9rem;
+    }
+    
+    /* Prizes Grid */
+    .prizes-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .prize-card {
+        max-width: 100%;
+    }
+    
+    /* All Prizes Grid */
+    .all-prizes-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .small-prize-card {
+        border-radius: 12px;
+    }
+    
+    .small-prize-image-placeholder {
+        height: 150px;
+    }
+    
+    .small-prize-title {
+        font-size: 0.95rem;
+        padding: 8px 10px 4px;
+    }
+    
+    .small-prize-description {
+        font-size: 0.8rem;
+        padding: 0 10px 10px;
+    }
+    
+    /* Section Titles */
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .section-subtitle {
+        font-size: 1rem;
+    }
+    
+    /* Footer */
     .footer {
         padding: 40px 0 20px;
     }
     
     .footer-content {
         gap: 30px;
+        grid-template-columns: 1fr;
     }
     
-    .cta-button {
-        padding: 12px 30px;
+    .footer-section h3 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Hero très petit écran */
+    .logo {
+        font-size: 2.5rem;
+    }
+    
+    .slogan {
         font-size: 1rem;
+    }
+    
+    .draw-date {
+        font-size: 0.9rem;
+    }
+    
+    .instagram {
+        font-size: 0.85rem;
+    }
+    
+    /* Navigation mobile */
+    .mobile-menu-toggle {
+        display: flex;
+    }
+    
+    .navbar-menu {
+        position: fixed;
+        top: 70px;
+        left: -100%;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+        transition: left 0.3s ease;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        z-index: 999;
+    }
+    
+    .navbar-menu.active {
+        left: 0;
+    }
+    
+    .nav-link {
+        padding: 10px 0;
+        font-size: 1.1rem;
+        text-align: center;
+    }
+    
+    .navbar-brand .logo {
+        font-size: 1.5rem;
+    }
+    
+    /* Grille des lots - 1 colonne */
+    .all-prizes-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .small-prize-image-placeholder {
+        height: 200px;
+    }
+    
+    /* Tickets */
+    .tickets-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ticket-card {
+        max-width: 100%;
     }
 }
