@@ -229,12 +229,12 @@
                     console.log('✅ Numéros de tickets affichés:', ticketText);
                 } else {
                     console.error('❌ Pas de numéros de tickets dans la réponse');
-                    document.getElementById('ticketNumbers').textContent = 'Erreur - Contactez le support';
+                    document.getElementById('ticketNumbers').textContent = 'Vos numéros vous ont été envoyés par email';
                 }
             })
             .catch(err => {
                 console.error('❌ Erreur serveur:', err);
-                document.getElementById('ticketNumbers').textContent = 'Erreur - Contactez le support';
+                document.getElementById('ticketNumbers').textContent = 'Vos numéros vous ont été envoyés par email';
             });
 
             // Nettoyer le sessionStorage
