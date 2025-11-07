@@ -12,13 +12,13 @@
         // Protection par mot de passe
         (function() {
             const password = sessionStorage.getItem('admin_auth');
-            if (password !== 'TOMBOG11') {
+            if (password !== 'ElioLyham2025') {
                 const userPassword = prompt('🔒 Mot de passe administrateur requis :');
-                if (userPassword !== 'TOMBOG11') {
+                if (userPassword !== 'ElioLyham2025') {
                     alert('❌ Mot de passe incorrect !');
                     window.location.href = 'index.html';
                 } else {
-                    sessionStorage.setItem('admin_auth', 'TOMBOG11');
+                    sessionStorage.setItem('admin_auth', 'ElioLyham2025');
                 }
             }
         })();
