@@ -227,6 +227,15 @@ function calculateCustomPrice(tickets) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Initialisation...');
     
+    // Réinitialiser la validation du téléphone quand l'utilisateur modifie le champ
+    const phoneInput = document.getElementById('phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            // Réinitialiser le message d'erreur personnalisé
+            this.setCustomValidity('');
+        });
+    }
+    
     // Menu burger mobile
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const navbarMenu = document.getElementById('navbarMenu');
