@@ -380,6 +380,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
             
+            // Validation du numéro de téléphone
+            const phoneClean = data.phone.replace(/\s/g, ''); // Enlever les espaces
+            
+            // Vérifier qu'il n'y a que des chiffres (pas de +, -, etc.)
+            if (!/^[0-9]+$/.test(phoneClean)) {
+                document.getElementById('phone').setCustomValidity('Le numéro ne doit contenir que des chiffres (pas de +33)');
+                document.getElementById('phone').reportValidity();
+                return false;
+            }
+            
+            // Vérifier que ça commence par 0
+            if (!phoneClean.startsWith('0')) {
+                document.getElementById('phone').setCustomValidity('Le numéro doit commencer par 0 (pas de +33)');
+                document.getElementById('phone').reportValidity();
+                return false;
+            }
+            
+            // Vérifier qu'il y a exactement 10 chiffres
+            if (phoneClean.length !== 10) {
+                document.getElementById('phone').setCustomValidity('Le numéro doit contenir exactement 10 chiffres');
+                document.getElementById('phone').reportValidity();
+                return false;
+            }
+            
+            // Réinitialiser la validation si tout est OK
+            document.getElementById('phone').setCustomValidity('');
+            
             if (!selectedTickets || !selectedPrice) {
                 alert('Erreur: Aucun ticket sélectionné');
                 return false;
