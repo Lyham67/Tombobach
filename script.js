@@ -3,8 +3,6 @@
 // ============================================
 
 
-const API_URL = 'https://tombobach.onrender.com'; // ← ton URL Render ici
-
 // Configuration Stripe - Utilise la clé depuis config.js
 let stripe = null;
 
