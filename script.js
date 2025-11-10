@@ -2,12 +2,6 @@
 // CONFIGURATION
 // ============================================
 
-if (typeof API_URL === 'undefined') {
-  var API_URL = 'https://ton-backend.onrender.com';
-}
-
-
-
 // Configuration Stripe - Utilise la clé depuis config.js
 let stripe = null;
 
