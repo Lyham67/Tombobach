@@ -2,6 +2,8 @@
 // CONFIGURATION
 // ============================================
 
+window.API_URL = window.API_URL || 'https://tombobach.onrender.com';
+
 
 // Configuration Stripe - Utilise la clé depuis config.js
 let stripe = null;
