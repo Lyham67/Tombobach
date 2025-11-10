@@ -381,11 +381,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Validation du numéro de téléphone
+            // Vérifier d'abord s'il y a des caractères interdits (avant de nettoyer)
+            if (/[+\-().]/.test(data.phone)) {
+                document.getElementById('phone').setCustomValidity('Le numéro ne doit pas contenir +, -, ( ), ou . (pas de +33)');
+                document.getElementById('phone').reportValidity();
+                return false;
+            }
+            
             const phoneClean = data.phone.replace(/\s/g, ''); // Enlever les espaces
             
-            // Vérifier qu'il n'y a que des chiffres (pas de +, -, etc.)
+            // Vérifier qu'il n'y a que des chiffres
             if (!/^[0-9]+$/.test(phoneClean)) {
-                document.getElementById('phone').setCustomValidity('Le numéro ne doit contenir que des chiffres (pas de +33)');
+                document.getElementById('phone').setCustomValidity('Le numéro ne doit contenir que des chiffres');
                 document.getElementById('phone').reportValidity();
                 return false;
             }
