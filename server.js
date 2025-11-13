@@ -301,14 +301,20 @@ app.post('/admin/verify-password', (req, res) => {
         const { password } = req.body;
         const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
         
+        console.log('🔐 Tentative de connexion admin');
+        console.log('📝 Mot de passe reçu:', password ? `${password.substring(0, 3)}***` : 'vide');
+        console.log('⚙️ Variable configurée:', ADMIN_PASSWORD ? 'OUI' : 'NON');
+        
         if (!ADMIN_PASSWORD) {
             console.error('❌ ADMIN_PASSWORD non configuré dans les variables d\'environnement');
             return res.status(500).json({ error: 'Configuration serveur manquante' });
         }
         
         if (password === ADMIN_PASSWORD) {
+            console.log('✅ Mot de passe correct');
             res.json({ valid: true });
         } else {
+            console.log('❌ Mot de passe incorrect');
             res.status(403).json({ valid: false, error: 'Mot de passe incorrect' });
         }
     } catch (error) {
