@@ -295,6 +295,28 @@ app.post('/save-payment', async (req, res) => {
     }
 });
 
+// Route pour vérifier le mot de passe admin
+app.post('/admin/verify-password', (req, res) => {
+    try {
+        const { password } = req.body;
+        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+        
+        if (!ADMIN_PASSWORD) {
+            console.error('❌ ADMIN_PASSWORD non configuré dans les variables d\'environnement');
+            return res.status(500).json({ error: 'Configuration serveur manquante' });
+        }
+        
+        if (password === ADMIN_PASSWORD) {
+            res.json({ valid: true });
+        } else {
+            res.status(403).json({ valid: false, error: 'Mot de passe incorrect' });
+        }
+    } catch (error) {
+        console.error('Erreur vérification mot de passe:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Route pour obtenir tous les paiements (interface admin)
 app.get('/admin/payments', async (req, res) => {
     try {
@@ -311,7 +333,8 @@ app.post('/admin/fix-vendeurs', async (req, res) => {
     try {
         const { password } = req.body;
         
-        if (password !== 'TOMBOG11') {
+        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+        if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) {
             return res.status(403).json({ error: 'Mot de passe incorrect' });
         }
         
@@ -346,7 +369,8 @@ app.post('/admin/import', async (req, res) => {
         const { password, payments } = req.body;
         
         // Vérifier le mot de passe
-        if (password !== 'TOMBOG11') {
+        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+        if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) {
             return res.status(403).json({ error: 'Mot de passe incorrect' });
         }
         
@@ -438,7 +462,8 @@ app.post('/api/content', (req, res) => {
     const { password, content } = req.body;
     
     // Vérifier le mot de passe
-    if (password !== 'TOMBOG11') {
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+    if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) {
         return res.status(403).json({ error: 'Mot de passe incorrect' });
     }
     
