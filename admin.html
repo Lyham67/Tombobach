@@ -9,6 +9,686 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="api-config.js"></script>
     <script>
+        // Protection par mot de passe (vérification côté serveur)
+        (async function() {
+            const isAuthenticated = sessionStorage.getItem('admin_authenticated');
+            if (isAuthenticated !== 'true') {
+                const userPassword = prompt('🔒 Mot de passe administrateur requis :');
+                if (!userPassword) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                // Vérifier le mot de passe côté serveur
+                try {
+                    const response = await fetch(`${API_URL}/admin/verify-password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password: userPassword })
+                    });
+                    
+                    const result = await response.json();
+                    if (response.ok && result.valid) {
+                        sessionStorage.setItem('admin_authenticated', 'true');
+                    } else {
+                        alert('❌ Mot de passe incorrect !');
+                        window.location.href = 'index.html';
+                    }
+                } catch (error) {
+                    alert('❌ Erreur de connexion au serveur');
+                    window.location.href = 'index.html';
+                }
+            }
+        })();
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #64748b;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+        
+        .vendeurs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .vendeur-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .vendeur-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .vendeur-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .vendeur-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .vendeur-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .vendeur-stat {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        
+        .vendeur-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4f46e5;
+            margin-bottom: 5px;
+        }
+        
+        .vendeur-stat-label {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        .payments-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .import-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .import-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .fix-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .fix-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        thead {
+            background: #f8fafc;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-simulation {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .refresh-btn {
+            padding: 10px 20px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .refresh-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎫 Tableau de bord Admin - Tombobach</h1>
+            <p class="subtitle">Gestion des paiements et statistiques</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="total-tickets">0</div>
+                <div class="stat-label">Tickets vendus</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-revenue">0€</div>
+                <div class="stat-label">Montant total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avg-ticket">0€</div>
+                <div class="stat-label">Panier moyen</div>
+            </div>
+        </div>
+        
+        <div class="vendeurs-section">
+            <h2 style="color: white; margin: 30px 0 20px 0;">📊 Performance des vendeurs</h2>
+            <div class="vendeurs-grid" id="vendeurs-container">
+                <!-- Les cartes des vendeurs seront ajoutées ici dynamiquement -->
+                <div style="color: white; text-align: center; padding: 20px; grid-column: 1 / -1;" id="loading-vendeurs">
+                    Chargement des données des vendeurs...
+                </div>
+            </div>
+        </div>
+
+        <div class="payments-section">
+            <div class="section-header">
+                <h2>Liste des paiements</h2>
+                <div>
+                    <button class="refresh-btn" onclick="loadPayments()">🔄 Actualiser</button>
+                    <button class="export-btn" onclick="exportToCSV()">📥 Exporter CSV</button>
+                    <button class="import-btn" onclick="document.getElementById('csv-upload').click()">📤 Importer CSV</button>
+                    <button class="fix-btn" onclick="fixVendeurs()">🔧 Corriger vendeurs</button>
+                    <input type="file" id="csv-upload" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
+                </div>
+            </div>
+
+            <div id="paymentsTable"></div>
+        </div>
+    </div>
+
+    <script>
+        // Charger les statistiques depuis le serveur
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}/admin/stats`);
+                const stats = await response.json();
+                
+                // Afficher les statistiques globales
+                document.getElementById('total-tickets').textContent = stats.totalTickets;
+                document.getElementById('total-revenue').textContent = stats.totalRevenue.toFixed(2) + '€';
+                
+                // Calculer le panier moyen
+                const avgTicket = stats.totalTickets > 0 ? (stats.totalRevenue / stats.totalTickets).toFixed(2) : 0;
+                document.getElementById('avg-ticket').textContent = avgTicket + '€';
+                
+                // Mettre à jour les statistiques des vendeurs
+                updateVendeursStats(stats.vendeurs);
+                
+            } catch (error) {
+                console.error('Erreur lors du chargement des statistiques:', error);
+                document.getElementById('loading-vendeurs').textContent = 'Erreur lors du chargement des statistiques des vendeurs';
+            }
+        }
+        
+        // Mettre à jour les statistiques des vendeurs
+        function updateVendeursStats(vendeurs) {
+            const container = document.getElementById('vendeurs-container');
+            container.innerHTML = ''; // Vider le conteneur
+            
+            // Liste complète de tous les vendeurs
+            const tousLesVendeurs = [
+                "Dorian", "Robin", "Léopold", "Julien/Alexandre", "Gaël", 
+                "Aloys", "Marin", "Maxence R", "Emerson", "Peyo", 
+                "Antoine", "Vincent", "Mayeul", "Thomas", "Samuel", 
+                "Mathieu", "Romain", "Timéo", "Jules", "Nathanaël", 
+                "Maxence D", "Raphaël", "Lyham", "Elio", "Théophile"
+            ];
+            
+            // Créer un objet avec tous les vendeurs initialisés à 0
+            const vendeursComplets = {};
+            tousLesVendeurs.forEach(nom => {
+                vendeursComplets[nom] = { tickets: 0, montant: 0 };
+            });
+            
+            // Fusionner avec les vraies données
+            if (vendeurs) {
+                Object.keys(vendeurs).forEach(nom => {
+                    vendeursComplets[nom] = vendeurs[nom];
+                });
+            }
+            
+            // Convertir en tableau et trier par nombre de tickets décroissant
+            const vendeursArray = Object.entries(vendeursComplets)
+                .map(([nom, stats]) => ({ nom, ...stats }))
+                .sort((a, b) => b.tickets - a.tickets);
+            
+            vendeursArray.forEach(vendeur => {
+                const vendeurItem = document.createElement('div');
+                vendeurItem.style.cssText = 'padding: 8px 12px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 8px; font-size: 0.95rem;';
+                
+                vendeurItem.innerHTML = `
+                    <strong>${vendeur.nom}</strong> : ${vendeur.tickets} ticket${vendeur.tickets > 1 ? 's' : ''}, ${vendeur.montant.toFixed(2)}€
+                `;
+                
+                container.appendChild(vendeurItem);
+            });
+        }
+        
+        // Charger les paiements depuis le serveur OU localStorage
+        async function loadPayments() {
+            try {
+                // Essayer de charger depuis le serveur
+                const response = await fetch(`${API_URL}/admin/payments`);
+                
+                if (response.ok) {
+                    // Serveur disponible
+                    await loadStats();
+                    const payments = await response.json();
+                    updatePaymentsTable(payments);
+                } else {
+                    throw new Error('Serveur non disponible');
+                }
+                
+            } catch (error) {
+                console.log('⚠️ Serveur non disponible, utilisation du mode local (localStorage)');
+                
+                // Mode local : charger depuis localStorage
+                const localPayments = JSON.parse(localStorage.getItem('payments') || '[]');
+                
+                if (localPayments.length === 0) {
+                    document.getElementById('paymentsTable').innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                            <p style="font-size: 1.2rem; margin-bottom: 10px;">📭 Aucun paiement enregistré</p>
+                            <p style="font-size: 0.9rem;">Les paiements apparaîtront ici après le premier achat.</p>
+                            <p style="font-size: 0.85rem; margin-top: 20px; color: #64748b;">
+                                💡 Mode local actif (pas de serveur détecté)
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    // Calculer les stats localement
+                    const totalTickets = localPayments.reduce((sum, p) => sum + p.tickets, 0);
+                    const totalRevenue = localPayments.reduce((sum, p) => sum + p.amount, 0);
+                    const avgTicket = totalTickets > 0 ? (totalRevenue / totalTickets).toFixed(2) : 0;
+                    
+                    document.getElementById('total-tickets').textContent = totalTickets;
+                    document.getElementById('total-revenue').textContent = totalRevenue.toFixed(2) + '€';
+                    document.getElementById('avg-ticket').textContent = avgTicket + '€';
+                    document.getElementById('total-payments').textContent = localPayments.length;
+                    
+                    // Afficher les paiements
+                    updatePaymentsTable(localPayments);
+                }
+            }
+        }
+        
+        // Mettre à jour le tableau des paiements
+        function updatePaymentsTable(payments) {
+            const tableContainer = document.getElementById('paymentsTable');
+            
+            if (!payments || payments.length === 0) {
+                tableContainer.innerHTML = '<div class="no-data">Aucun paiement enregistré pour le moment.</div>';
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket</th>
+                            <th>Prénom</th>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Vendeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // Trier par numéro de ticket croissant
+            const sortedPayments = [...payments].sort((a, b) => a.ticket - b.ticket);
+
+            // Ajouter chaque ticket au tableau
+            sortedPayments.forEach((payment) => {
+                tableHTML += `
+                    <tr>
+                        <td><strong>${payment.ticket}</strong></td>
+                        <td>${payment.firstName || '-'}</td>
+                        <td>${payment.lastName || '-'}</td>
+                        <td>${payment.email || '-'}</td>
+                        <td>${payment.phone || '-'}</td>
+                        <td><span style="background: #667eea; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;">${payment.vendeur || 'Non spécifié'}</span></td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            tableContainer.innerHTML = tableHTML;
+        }
+
+        // Exporter en CSV
+        async function exportToCSV() {
+            try {
+                const response = await fetch(`${API_URL}/admin/payments`);
+                if (!response.ok) throw new Error('Erreur lors du chargement des données');
+                const tickets = await response.json();
+                
+                if (!tickets || tickets.length === 0) {
+                    alert('Aucune donnée à exporter');
+                    return;
+                }
+
+                // Trier les tickets par numéro croissant
+                const sortedTickets = [...tickets].sort((a, b) => a.ticket - b.ticket);
+                
+                let csv = 'Numéro de ticket,Prénom,Nom,Email,Téléphone,Vendeur,Montant,Date\n';
+                
+                sortedTickets.forEach((ticket) => {
+                    const amount = ticket.amount || 2; // Montant par ticket
+                    const date = ticket.date ? new Date(ticket.date).toLocaleDateString('fr-FR') : '-';
+                    csv += `"${ticket.ticket}","${ticket.firstName || ''}","${ticket.lastName || ''}","${ticket.email || ''}","${ticket.phone || ''}","${ticket.vendeur || ''}","${amount}€","${date}"\n`;
+                });
+
+            // Créer un blob et télécharger
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `tombobach_paiements_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            } catch (error) {
+                console.error('Erreur lors de l\'export CSV:', error);
+                alert(`Erreur lors de l'exportation: ${error.message}`);
+            }
+        }
+
+        // Importer depuis un CSV
+        async function importFromCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const password = prompt('🔒 Mot de passe pour importer les données :');
+            if (!password) {
+                return;
+            }
+
+            try {
+                const text = await file.text();
+                const lines = text.split('\n').filter(line => line.trim());
+                
+                // Ignorer la première ligne (en-têtes)
+                const dataLines = lines.slice(1);
+                
+                const payments = [];
+                dataLines.forEach(line => {
+                    const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                    if (values && values.length >= 7) {
+                        const ticket = values[0].replace(/"/g, '');
+                        const firstName = values[1].replace(/"/g, '');
+                        const lastName = values[2].replace(/"/g, '');
+                        const email = values[3].replace(/"/g, '');
+                        const phone = values[4].replace(/"/g, '');
+                        const vendeur = values[5].replace(/"/g, '');
+                        const amount = parseFloat(values[6].replace(/[€"]/g, ''));
+                        
+                        payments.push({
+                            ticket: parseInt(ticket),
+                            firstName,
+                            lastName,
+                            email,
+                            phone,
+                            vendeur,
+                            amount,
+                            date: new Date().toISOString()
+                        });
+                    }
+                });
+
+                // Envoyer au serveur
+                const response = await fetch(`${API_URL}/admin/import`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password, payments })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(`✅ ${payments.length} paiements importés avec succès !`);
+                    loadPayments();
+                    loadStats();
+                } else {
+                    alert('❌ ' + (result.error || 'Erreur lors de l\'importation'));
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'import CSV:', error);
+                alert(`Erreur lors de l'importation: ${error.message}`);
+            }
+        }
+
+        // Corriger les vendeurs manquants
+        async function fixVendeurs() {
+            const password = prompt('🔒 Mot de passe pour corriger les données :');
+            if (!password) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/admin/fix-vendeurs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(`✅ ${result.message}`);
+                    loadPayments();
+                    loadStats();
+                } else {
+                    alert('❌ ' + (result.error || 'Erreur lors de la correction'));
+                }
+            } catch (error) {
+                console.error('Erreur lors de la correction:', error);
+                alert(`Erreur: ${error.message}`);
+            }
+        }
+
+        // Charger les paiements au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPayments();
+            
+            // Actualiser automatiquement toutes les 30 secondes
+            setInterval(loadPayments, 30000);
+            
+            console.log('📊 Interface admin chargée');
+            console.log('🔄 Actualisation automatique toutes les 30 secondes');
+        });
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Tombobach</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="api-config.js"></script>
+    <script>
         // Protection par mot de passe
         (function() {
             const password = sessionStorage.getItem('admin_auth');
