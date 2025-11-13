@@ -337,13 +337,6 @@ app.get('/admin/payments', async (req, res) => {
 // Route pour corriger les paiements sans vendeur
 app.post('/admin/fix-vendeurs', async (req, res) => {
     try {
-        const { password } = req.body;
-        
-        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-        if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) {
-            return res.status(403).json({ error: 'Mot de passe incorrect' });
-        }
-        
         const dbData = await readDatabase();
         let fixed = 0;
         
@@ -372,13 +365,7 @@ app.post('/admin/fix-vendeurs', async (req, res) => {
 // Route pour importer des paiements depuis un CSV
 app.post('/admin/import', async (req, res) => {
     try {
-        const { password, payments } = req.body;
-        
-        // Vérifier le mot de passe
-        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-        if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) {
-            return res.status(403).json({ error: 'Mot de passe incorrect' });
-        }
+        const { payments } = req.body;
         
         const dbData = await readDatabase();
         
@@ -465,13 +452,7 @@ app.get('/api/content', (req, res) => {
 
 // Route pour sauvegarder le contenu du site (protégée par mot de passe)
 app.post('/api/content', (req, res) => {
-    const { password, content } = req.body;
-    
-    // Vérifier le mot de passe
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-    if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) {
-        return res.status(403).json({ error: 'Mot de passe incorrect' });
-    }
+    const { content } = req.body;
     
     // Sauvegarder le contenu
     if (saveSiteContent(content)) {
