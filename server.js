@@ -204,6 +204,7 @@ app.post('/create-checkout-session', async (req, res) => {
                 },
             ],
             mode: 'payment',
+            allow_promotion_codes: true, // Active les codes promo
             success_url: `https://tombobach.com/success.html?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `https://tombobach.com/?canceled=true`,
             customer_email: customerInfo.email,
